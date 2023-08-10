@@ -1,0 +1,20 @@
+.container {
+    width: 100%;
+    /* 确保容器宽度填满父节点 */
+    display: inline-block;
+    /* 可以使用inline-block使容器只占用必要的宽度 */
+    text-align: center;
+    /* 水平居中图片 */
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.container img {
+    width: 49%;
+    /* 图片宽度为父节点宽度的一半 */
+    max-width: 100%;
+    /* 确保图片不超过容器宽度 */
+    height: auto;
+    /* 根据宽度自动调整高度，保持宽高比 */
+    padding: 0.5%;
+}
