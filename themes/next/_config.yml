@@ -155,8 +155,8 @@ site_state: true
 # Key is the link label showing to end users.
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
-  GitHub: https://github.com/coffeeofnosugar
-  Gitee: https://gitee.com/coffeeofnosugar
+  GitHub: https://github.com/coffeeofnosugar || fab fa-github
+  Gitee: https://gitee.com/coffeeofnosugar || fab fa-gitee
   #GitHub: https://github.com/yourname || fab fa-github
   #E-Mail: mailto:yourname@gmail.com || fa fa-envelope
   #Weibo: https://weibo.com/yourname || fab fa-weibo
@@ -171,6 +171,7 @@ social_icons:
   enable: true
   icons_only: false
   transition: false
+  # GitHub: github
 
 # Blog rolls
 links_settings:
@@ -221,7 +222,7 @@ footer:
   copyright:
 
   # Powered by Hexo & NexT
-  powered: true
+  powered: false
 
   # Beian ICP and gongan information for Chinese users. See: https://beian.miit.gov.cn, http://www.beian.gov.cn
   beian:
@@ -641,7 +642,7 @@ motion:
 # Progress bar in the top during page loading.
 # For more information: https://github.com/CodeByZach/pace
 pace:
-  enable: false
+  enable: true
   # All available colors:
   # black | blue | green | orange | pink | purple | red | silver | white | yellow
   color: blue
@@ -926,3 +927,32 @@ vendors:
 css: css
 js: js
 images: images
+
+# --------------------------------------------------------------
+# background settings
+# 背景动态线条
+# --------------------------------------------------------------
+# add canvas-nest effect
+# see detail from https://github.com/hustcc/canvas-nest.js
+canvas_nest: true
+
+
+live2d:
+  enable: true
+  scriptFrom: local
+  pluginRootPath: live2dw/
+  pluginJsPath: lib/
+  pluginModelPath: assets/
+  tagMode: false
+  debug: false
+  model:
+    use: live2d-widget-model-miku
+  display:
+    position: left
+    width: 150
+    height: 300
+  mobile:
+    show: true
+  react:
+    opacity: 0.7
+

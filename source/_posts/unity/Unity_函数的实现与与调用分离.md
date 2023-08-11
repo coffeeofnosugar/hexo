@@ -1,0 +1,126 @@
+---
+title: 函数的实现与与调用分离
+date: 2023-08-11 21:27:06
+tags:
+  - Unity
+  - 设计模式
+---
+
+## 函数的实现与分离
+
+### 基本结构
+
+<img class="exercise" src="/../images/Unity/函数的实现与与调用分离.png"></img>
+
+
+
+#### Listener
+
+- 每个物体需要挂载一个。因为内容是一样的，所以可以通过脚本的方式自动挂载
+- adad
+
+```C#
+private void OnMouseDown()
+{
+    MouseManager.Instance.ClickObj(gameObject.name);
+}
+```
+
+
+
+#### Manager
+
+1. 设置为单例脚本
+
+2. 通过‘名称’获取所有需要管理的物体
+
+```c#
+// 获取物体并存储下来{ 物体名称：物体属性 }，物体属性可以重新写一个类，来存储这个物体所有需要用到的属性
+public Dictionary<string, MouseInfo> mouseDownDic = new Dictionary<string, MouseInfo>();
+
+private void OnEnable()
+{
+    MouseListener[] mouseListeners = transform.GetCompoentsInChildren<MouseListener>();
+    foreach (MouseListener item in mouseListeners)
+    {
+        AddClickDic(item);
+    }
+}
+
+public void AddClickDic(MouseListener mouseListener)
+{
+    string clickObjName = mouseListener.gameObject.name;
+    // 先判断字典中是否已经有该物体，如果没有就将这个物体添加到字典中，如果已经有了就退出
+    MouseInfo mouseInfo = new MouseInfo(){
+        // 将物体mouseListener的属性赋给mouseInfo的元素
+    };
+    // 将物体添加到字典中
+    mouseDownDic.Add(clickObjName, mouseInfo);
+}
+
+public class MouseInfo
+{
+    // ... 其他属性(在AddclickDic中添加)
+    public UnityAction<string> action;		// 在RegisterClick中添加
+}
+```
+
+3. 初始化物体，并注册事件
+
+```c#
+public void RegisterClick(string clickObjName, UnityAction<string> clickCallback)
+{
+    // 先判断字典中是否有这个物体，如果有才执行注册，如果没有就退出
+    mouseDownDic[clickObjName].action += clickCallback;
+    // 初始化物体，比如激活触发盒
+}
+```
+
+也可以在AddClickDic函数中初始化物体，但是一般不这么做，原因有二：
+
+- 这个函数只用来添加属性，不干其他的
+
+- RegisterClick函数是在AddClickDic函数后面执行的，如果在AddClickDic中初始化了，在RegisterClick中再初始化会覆盖AddClickDic中的初始化
+
+那可能你又要问：为什么不在AddClickDic的时候就将物体初始化好，并且注册事件呢
+
+答：因为这两个函数的作用位置不同
+
+- AddClickDic是在Manager中先存储所有的物体信息，要先执行
+- RegisterClick则是在每个物体自己的脚本中获取到Manager的字典，然后将物体各自的事件注册到字典对应的值中，要后执行
+
+4. 写一个通过‘名称’调用指定物体方法的函数
+
+```c#
+public void ClickObj(string objName)
+{
+    // 调用物体的方法
+    mouseDownDic[objName].action?.invoke(objName);
+}
+```
+
+
+
+#### Script
+
+1. 实现每个物体各自的方法
+
+```C#
+public void Red_Fly()
+{
+    Debug.Log("红色_起飞");
+}
+```
+
+2. 注册方法
+
+```c#
+// 记得在start中调用
+// 注意：这里涉及到一个函数执行顺序的问题，在Manager中AddClickDic是在OnEnable中执行的，而RegisterClick需要在AddClickDic后执行，所以在start中调用
+public void RegisterFunc()
+{
+    MouseManager.Instance.RegisterClick(gameObject.name, () => Red_Fly());
+}
+```
+
+转载：[【Unity】编程思想小分享：函数的实现与调用如何分离](https://www.bilibili.com/video/BV1zk4y1g7RG/?spm_id_from=333.1007.top_right_bar_window_history.content.click&vd_source=56c4342823eb8458689563e7f2be4f99)
