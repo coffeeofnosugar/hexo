@@ -156,7 +156,7 @@ site_state: true
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
   GitHub: https://github.com/coffeeofnosugar || fab fa-github
-  Gitee: https://gitee.com/coffeeofnosugar || fab fa-gitee
+  Gitee: https://gitee.com/coffeeofnosugar || fa fa-heart
   #GitHub: https://github.com/yourname || fab fa-github
   #E-Mail: mailto:yourname@gmail.com || fa fa-envelope
   #Weibo: https://weibo.com/yourname || fab fa-weibo
@@ -180,7 +180,7 @@ links_settings:
   layout: block
 
 links:
-  #Title: https://example.com
+  # Title: https://example.com
 
 # Table of Contents in the Sidebar
 # Front-matter variable (nonsupport wrap expand_all).
@@ -242,13 +242,15 @@ footer:
 # ---------------------------------------------------------------
 
 # Use `description` in front-matter to specify post excerpt.
+# 一般不使用这个方法，一般是在md文件中直接写 <!-- more --> 二者的效果是一样的
 excerpt_description: true
 
 # Read more button
 # If true, the read more button will be displayed in excerpt section.
-read_more_btn: true
+read_more_btn: false
 
 # Post meta display settings
+# 主页显示的内容
 post_meta:
   item_text: true
   created_at: true
@@ -261,13 +263,16 @@ post_meta:
 # Dependencies: https://github.com/next-theme/hexo-word-counter
 symbols_count_time:
   separated_meta: true
-  item_text_total: false
+  item_text_total: true
 
 # Use icon instead of the symbol # to indicate the tag at the bottom of the post
-tag_icon: false
+# false：在tag前加上#
+# true：在tag前加上标签icon
+tag_icon: true
 
 # Donate (Sponsor) settings
 # Front-matter variable (nonsupport animation).
+# 打赏功能
 reward_settings:
   # If true, a donate button will be displayed in every article by default.
   enable: false
@@ -384,7 +389,7 @@ codeblock:
 back2top:
   enable: true
   # Back to top in sidebar.
-  sidebar: false
+  sidebar: true
   # Scroll percent label in b2t button.
   scrollpercent: true
 
@@ -392,16 +397,16 @@ back2top:
 reading_progress:
   enable: false
   # Available values: left | right
-  start_at: left
+  start_at: false
   # Available values: top | bottom
-  position: top
+  position: bottom
   reversed: false
   color: "#37c6c0"
   height: 3px
 
 # Bookmark Support
 bookmark:
-  enable: false
+  enable: true
   # Customize the color of the bookmark.
   color: "#222"
   # If auto, save the reading progress when closing the page or clicking the bookmark-icon.
@@ -410,8 +415,8 @@ bookmark:
 
 # `Follow me on GitHub` banner in the top-right corner.
 github_banner:
-  enable: false
-  permalink: https://github.com/yourname
+  enable: true
+  permalink: https://github.com/coffeeofnosugar
 
 
 # ---------------------------------------------------------------
@@ -622,13 +627,14 @@ quicklink:
 
 # ---------------------------------------------------------------
 # Animation Settings
+# 页面加载动画
 # ---------------------------------------------------------------
 
 # Use Animate.css to animate everything.
 # For more information: https://animate.style
 motion:
-  enable: false
-  async: false
+  enable: true
+  async: true
   transition:
     # All available transition variants: https://theme-next.js.org/animate/
     menu_item: fadeInDown
@@ -928,6 +934,9 @@ css: css
 js: js
 images: images
 
+
+
+
 # --------------------------------------------------------------
 # background settings
 # 背景动态线条
@@ -936,7 +945,9 @@ images: images
 # see detail from https://github.com/hustcc/canvas-nest.js
 canvas_nest: true
 
-
+# --------------------------------------------------------------
+# 看板娘
+# --------------------------------------------------------------
 live2d:
   enable: true
   scriptFrom: local
@@ -956,3 +967,12 @@ live2d:
   react:
     opacity: 0.7
 
+# --------------------------------------------------------------
+# hexo-tag-cloud
+# --------------------------------------------------------------
+tag_cloud:
+    textFont: Trebuchet MS, Helvetica
+    textColor: '#333'
+    textHeight: 25
+    outlineColor: '#E2E1D1'
+    maxSpeed: 0.1 

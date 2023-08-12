@@ -10,6 +10,7 @@ tags: 运动
 
 <center>最早是从7月14日开始每天跑步</center>
 <center class="small">除了19、20、21连续下了三天雨外</center>
+<!-- more -->
 
 从7月14日开始跑步其中发生的一些事件：
 
