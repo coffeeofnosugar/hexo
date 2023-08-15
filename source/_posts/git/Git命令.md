@@ -6,6 +6,37 @@ tags: Git
 
 <link rel="stylesheet" href="/../css/center.css">
 
+## 合并分支
+
+使用`git merge <branchName>`命令将`<branchName>`分支上的内容合并到当前所在的分支上
+
+出现如下内容，说明自动合并发生了冲突，需要手动解决冲突
+
+<img src="/../images/git/合并分支_冲突.png"></img>
+
+使用`git status`查看冲突文件
+<img src="/../images/git/合并分支_冲突文件.png"></img>
+
+使用`git diff`查看冲突内容
+<img src="/../images/git/合并分支_冲突内容.png"></img>
+
+使用`vim <fielName>`编辑该文件，留下我们需要的内容
+随便怎么改都行，你就把它想成是重新编辑文件，只不过给了你两个版本的提示
+
+修改前：
+
+<img src="/../images/git/合并分支_编辑文件.png"></img>
+
+修改后：
+
+<img src="/../images/git/合并分支_修复冲突.png"></img>
+
+最后再重新提交一遍就成功的解决了冲突
+
+<img src="/../images/git/合并分支_提交冲突文件.png"></img>
+
+---
+
 
 
 ## Git远程命令
