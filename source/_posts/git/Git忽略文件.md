@@ -47,3 +47,7 @@ git update-index --no-assume-unchanged <file>
 // 查看忽略了哪些文件
 git ls-files -v | grep '^h\'
 ```
+
+参考
+
+[一文带你彻底搞懂Git！](https://zhuanlan.zhihu.com/p/559692211)

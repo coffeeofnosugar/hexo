@@ -23,4 +23,4 @@ git push -u <origin_name> <branch_name>
 git pull <origin_name> <branch_name>
 ```
 
-<center class="middle">持续更新</center>
+<center class="moderate">持续更新</center>
