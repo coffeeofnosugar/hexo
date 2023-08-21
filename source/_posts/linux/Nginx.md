@@ -10,7 +10,7 @@ tags: Linux
 
 网站：[nginx: download](https://nginx.org/en/download.html)
 
-<img class="base" src="/../images/Linux/nginx/安装网站.png"></img>
+<img src="/../images/Linux/nginx/安装网站.png"></img>
 
 #### 上传解压
 
