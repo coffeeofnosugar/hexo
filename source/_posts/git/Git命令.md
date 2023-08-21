@@ -7,6 +7,37 @@ tags: Git
 <link rel="stylesheet" href="/../css/center.css">
 <link rel="stylesheet" href="/../css/images.css">
 
+## 基础结构
+
+### 文件状态
+
+<img class="base" src="/../images/git/基础结构.png"></img>
+
+1. `Changes to be committed`
+
+   文件已经被`git add <file>`存放在暂存区，现在有两条路可以走
+
+   - 提交：使用`git commit -m ""`提交
+   - 恢复：使用`git restore --staged <file>`或`git reset <file>`将文件复原到工作区，文件修改的内容会保留
+   
+2. `Changes not staged for commit`
+
+   文件被修改，但是还为被`git add <file>`
+
+   - 提交到暂存区：使用`git add <file>`
+   - 恢复：使用`git restore <file>`或`git checkout <file>`将文件的内容恢复成上一次提交的内容
+
+3. `Untracked files`
+
+   新建的文件，还未被跟踪。这种状态的文件可以使用`.gitignore`文件取消跟踪
+   
+   - 使用`git add <file>`跟踪文件
+   - 使用`.gitignore`屏蔽文件
+   - 直接删除文件
+
+
+
+
 ## 合并分支
 
 ### 合并
