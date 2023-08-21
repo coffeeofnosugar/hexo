@@ -6,11 +6,11 @@ tags:
   - 魔法方法
 ---
 
-## 装饰器
+### 装饰器
 
  装饰器可以灵活的控制两个函数的执行顺序
 
-### 无返回值
+#### 无返回值
 
 ```python
 def sum(func):
@@ -31,7 +31,7 @@ def take():
 3
 ```
 
-### 有返回值
+#### 有返回值
 
 ```python
 def outer(func):
@@ -65,7 +65,7 @@ inner
 
 
 
-## 上下文管理器
+### 上下文管理器
 
 在 Python 中，上下文管理器常常与 `with` 语句一起使用。`with` 语句会在代码块进入时调用上下文管理器的 `__enter__()` 方法，而在代码块退出时会调用上下文管理器的 `__exit__()` 方法。这种机制确保了资源在适当的时候被初始化和清理。
 
@@ -115,9 +115,9 @@ Outside the context
 
 
 
-## contextlib模块
+### contextlib模块
 
-### 基础用法
+#### 基础用法
 
 上面我们自定义上下文管理器确实很方便，但是Python标准库还提供了更加易用的上下文管理器工具模块contextlib，它是通过生成器实现的，我们不需要再创建类以及`__enter__`和`__exit__`这两个特俗的方法：
 
@@ -145,7 +145,7 @@ with make_open_context('/tmp/a.txt', 'a') as file_obj:
 
 另外要注意的是，如果`yield`没有生成值，那么在`with`语句中就不需要写`as`子句了
 
-### 将普通的类变为上下文管理器类
+#### 将普通的类变为上下文管理器类
 
 ```python
 from contextlib import contextmanager

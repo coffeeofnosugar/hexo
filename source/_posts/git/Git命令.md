@@ -7,9 +7,9 @@ tags: Git
 <link rel="stylesheet" href="/../css/center.css">
 <link rel="stylesheet" href="/../css/images.css">
 
-## 基础结构
+### 基础结构
 
-### 文件状态
+#### 文件状态
 
 <img class="base" src="/../images/git/基础结构.png"></img>
 
@@ -35,18 +35,18 @@ tags: Git
    - 使用`.gitignore`屏蔽文件
    - 直接删除文件
 
+---
 
 
+### 合并分支
 
-## 合并分支
-
-### 合并
+#### 合并
 
 使用`git merge <branchName>`命令将`<branchName>`分支上的内容合并到当前所在的分支上
 
 `<branchName>` 可以是分支的名字，也可以是`commitID`
 
-### 出现冲突
+#### 出现冲突
 
 出现如下内容，说明自动合并发生了冲突，需要手动解决冲突
 
@@ -58,9 +58,9 @@ tags: Git
 使用`git diff`查看冲突内容
 <img class="base" src="/../images/git/合并分支_冲突内容.png"></img>
 
-### 解决冲突
+#### 解决冲突
 
-#### 方法一:直接编辑
+##### 方法一:直接编辑
 
 使用`vim <fielName>`编辑该文件，留下我们需要的内容
 随便怎么改都行，你就把它想成是重新编辑文件，只不过给了你两个版本的提示
@@ -73,7 +73,7 @@ tags: Git
 
 <img class="base" src="/../images/git/合并分支_修复冲突.png"></img>
 
-#### 方法二:保留选择的版本
+##### 方法二:保留选择的版本
 
 选择当前分支的版本作为解决方案
 
@@ -87,7 +87,7 @@ git checkout --ours <fileName>
 git checkout --theirs <fileName>
 ```
 
-### 保存提交
+#### 保存提交
 
 最后再重新提交一遍就成功的解决了冲突
 
@@ -97,7 +97,7 @@ git checkout --theirs <fileName>
 
 
 
-## Git远程命令
+### Git远程命令
 
 
 
