@@ -79,3 +79,17 @@ set global validate_password.length = 4;
 ```
 
 <img src="/../images/Linux/mysql/设置密码复杂度.png">
+
+---
+
+### 远程连接
+
+可能遇到的问题
+
+1. MySQL是否关掉了
+2. 防火墙的3306端口是否对外开放了
+3. 如果你是云服务器还需要开放3306的安全组
+
+---
+
+参考连接：[Linux-安装MySQL（详细教程）](https://blog.csdn.net/u013733643/article/details/128970496)
