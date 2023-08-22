@@ -86,6 +86,22 @@ set global validate_password.length = 4;
 
 可能遇到的问题
 
+#### MySQL自身原因
+
+MySQL默认不允许远程连接，修改配置
+
+1. 使用`mysql -u root -p`链接服务器
+2. `show databases;`查看当前所有数据库
+3. `use mysql;`进入mysql数据库（配置mysql的一个数据库）
+4. `select user,host from user;`查看用户的链接方式
+
+<img src="/../images/Linux/mysql/链接方式.png">
+
+5. 使用`update user set host='%' where user='root';`将root的链接方式修改为%
+6. `systemctl restart mysqld`重启mysql服务器
+
+#### 外在原因
+
 1. MySQL是否关掉了
 2. 防火墙的3306端口是否对外开放了
 3. 如果你是云服务器还需要开放3306的安全组
