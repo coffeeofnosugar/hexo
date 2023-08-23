@@ -28,7 +28,7 @@ sudo ln -s /usr/local/nvim/bin/nvim /usr/bin/nvim
 
 #### 创建配置文件
 
-默认配置文件位置：
+##### 默认配置文件路径：
 
 ```bash
 # 创建配置文件夹
@@ -37,7 +37,7 @@ mkdir ~/.config/nvim
 nvim ~/.config/nvim/init.vim
 ```
 
-也可以自定义配置文件的路径
+##### 自定义配置文件的路径：
 
 1. 创建配置文件
 
@@ -67,7 +67,7 @@ export XDG_DATA_HOME=/usr/local/nvim-linux64/config
 source /etc/profile
 ```
 
-#### 我的配置
+#### 基础配置
 
 ```bash
 " 基础键位映射
@@ -77,5 +77,46 @@ nmap <space> :
 " 显示相对行
 set relativenumber
 set number
+```
+
+#### 安装vim-plug插件管理
+
+前面不是命名了全局变量`XDG_DATA_HOME`吗，这个时候就用上了
+
+创建路径`/usr/local/nvim-linux64/config/nvim/site/autoload/`
+
+并将`plug.vim`文件放在这个路径下
+
+[Download plug.vim](https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim)
+
+---
+
+
+
+### 我的配置
+
+```shell
+" 基础键位映射
+imap jk <Esc>
+nmap <space> :
+
+" 显示相对行
+set relativenumber
+set number
+
+" nerdtree插件绑定
+map <silent> <C-e> :NERDTreeToggle<CR>
+
+" python补全
+filetype plugin on
+let g:pydiction_location = '$XDG_CONFIG_HOME\\nvim-data\\plugged\\pydiction\\complete-dict'
+
+
+call plug#begin()
+
+Plug 'scrooloose/nerdtree'
+Plug 'rkulla/pydiction'
+
+call plug#end()
 ```
 
