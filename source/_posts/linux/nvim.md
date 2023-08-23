@@ -1,5 +1,5 @@
 ---
-title: 【Linux】nvim
+title: 【Linux】Nvim
 date: 2023-08-22 22:42:06
 tags: Linux
 ---

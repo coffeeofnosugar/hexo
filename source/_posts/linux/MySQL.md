@@ -106,6 +106,15 @@ MySQL默认不允许远程连接，修改配置
 2. 防火墙的3306端口是否对外开放了
 3. 如果你是云服务器还需要开放3306的安全组
 
+```bash
+# 开放80端口，`--premanent`表示永久开放，重启后也依然开放
+sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
+# 重新加载防火墙
+firewall-cmd --reload
+```
+
+
+
 ---
 
 参考连接：[Linux-安装MySQL（详细教程）](https://blog.csdn.net/u013733643/article/details/128970496)
