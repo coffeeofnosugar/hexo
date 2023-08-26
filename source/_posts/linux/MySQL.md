@@ -10,11 +10,11 @@ tags: Linux
 
 官网网址：[MySQL :: MySQL Community Downloads](https://dev.mysql.com/downloads/)
 
-<img src="/../images/Linux/mysql/安装网址1.png"></img>
+<img src="/../images/linux/mysql/安装网址1.png"></img>
 
-<img src="/../images/Linux/mysql/安装网址2.png"></img>
+<img src="/../images/linux/mysql/安装网址2.png"></img>
 
-<img src="/../images/Linux/mysql/安装网址3.png"></img>
+<img src="/../images/linux/mysql/安装网址3.png"></img>
 
 将文件解压到一个新建的文件夹中`tar -xvf mysql-8.0.33-1.el7.x86_64.rpm-bundle.tar -C mysql-8.0.33`
 
@@ -53,17 +53,17 @@ rpm -ivh mysql-community-server-8.0.33-1.el7.x86_64.rpm
 
 rpm安装MySQL会自动生成一个随机密码，可以在`/var/log/mysqld.log`中查看
 
-<img src="/../images/Linux/mysql/随机密码.png">
+<img src="/../images/linux/mysql/随机密码.png">
 
 使用`mysql -u root -p`进入客户端
 
-<img src="/../images/Linux/mysql/输入密码.png">
+<img src="/../images/linux/mysql/输入密码.png">
 
 #### 设置密码
 
 连接MySQL之后，使用`ALTER USER 'root'@'localhost' IDENTIFIED BY '123456789';`修改密码
 
-<img src="/../images/Linux/mysql/设置密码.png">
+<img src="/../images/linux/mysql/设置密码.png">
 
 出现`Your password does not satisfy the current policy requirements`提示，意思是您的密码不符合当前规定的要求，你要么就把你的密码设置得复杂点，要么就去降低密码的校验规则。
 
@@ -78,7 +78,7 @@ set global validate_password.policy = 0;
 set global validate_password.length = 4;
 ```
 
-<img src="/../images/Linux/mysql/设置密码复杂度.png">
+<img src="/../images/linux/mysql/设置密码复杂度.png">
 
 ---
 
@@ -95,7 +95,7 @@ MySQL默认不允许远程连接，修改配置
 3. `use mysql;`进入mysql数据库（配置mysql的一个数据库）
 4. `select user,host from user;`查看用户的链接方式
 
-<img src="/../images/Linux/mysql/链接方式.png">
+<img src="/../images/linux/mysql/链接方式.png">
 
 5. 使用`update user set host='%' where user='root';`将root的链接方式修改为%
 6. `systemctl restart mysqld`重启mysql服务器

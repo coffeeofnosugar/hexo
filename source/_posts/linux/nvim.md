@@ -49,7 +49,7 @@ mkdir ./config/nvim
 nvim ./config/nvim/init.vim
 ```
 
-<img src="/../images/Linux/nvim/配置文件1.png"></img>
+<img src="/../images/linux/nvim/配置文件1.png"></img>
 
 2. `nvim /etc/profile`修改环境变量
 
@@ -59,7 +59,7 @@ export XDG_CONFIG_HOME=/usr/local/nvim-linux64/config
 export XDG_DATA_HOME=/usr/local/nvim-linux64/config
 ```
 
-<img src="/../images/Linux/nvim/配置文件2.png"></img>
+<img src="/../images/linux/nvim/配置文件2.png"></img>
 
 3. 重载配置文件
 
