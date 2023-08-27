@@ -1,9 +1,9 @@
-img.base {
+img.left {
     margin-left: 0;
     padding-left: 0;
 }
 
-img.exercise {
+img.half {
     max-width: 50%;
     height: auto;
 }
