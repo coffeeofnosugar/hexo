@@ -113,9 +113,23 @@ sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
 firewall-cmd --reload
 ```
 
-### 使用语句
+### 基础语法
 
 #### 查询语句
+
+| 语法                                           | 解释                                 | e.g.                                               |
+| ---------------------------------------------- | ------------------------------------ | -------------------------------------------------- |
+| `SELECT <col> FROM <table>;`                   | 显示`<table>`表中的`<col>`列中的数据 | `SELECT level, exp FROM player`                    |
+| `SELECT <col> FROM <table> WHERE <condition>;` | 显示`<col>`中符合`<condition>`的数据 | `SELECT name, level FROM player WHERE level < 10;` |
+|                                                |                                      |                                                    |
+
+
+
+
+
+
+
+
 
 ---
 
