@@ -121,7 +121,7 @@ firewall-cmd --reload
 | --------------------------------------------------- | ------------------------------------ |
 | `SELECT <col> FROM <table>;`                        | 显示`<table>`表中的`<col>`列中的数据 |
 | `SELECT <col> FROM <table> WHERE <condition>;`      | 显示`<col>`中符合`<condition>`的数据 |
-| `SELECT <col> FROM <table> ORDER BY <col> ASC|DESC` | 按照排序显示查询数据                 |
+| `SELECT <col> FROM <table> ORDER BY <col> ASC|DESC;` | 按照排序显示查询数据                 |
 
 ##### `WHERE <condition>`限制查询目标语法
 
