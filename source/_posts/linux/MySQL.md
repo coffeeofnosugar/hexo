@@ -113,7 +113,9 @@ sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
 firewall-cmd --reload
 ```
 
+### 使用语句
 
+#### 查询语句
 
 ---
 
