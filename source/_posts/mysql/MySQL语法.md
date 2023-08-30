@@ -26,37 +26,92 @@ tags: MySQL
 | `CREATE TABLE <table_name> <表的结构定义>;` | 创建表     |
 | `DROP TABLE <table_name>;`                  | 删除表     |
 
-##### `<表的结构定义>`语法
+##### 定义表结构
 
-在创建表的时候可以，定义列名和列的格式
+在创建表的时候可以，定义列名、列的<a href="./#数据类型">数据类型</a>和<a href="./#默认值">默认值</a>
 
 ```mysql
 CREATE TABLE player (
-	id INT,					-- 列名为id，格式为INT
-    name VARCHAR(100),		-- 长度为100的变长字符串
-    level INT,
+	id INT NOT NULL,			-- 列名为id，数据类型为INT，并且不能为NULL
+    name VARCHAR(100) UNIQUE,	-- 长度为100的变长字符串这个字段必须为唯一值
+    level INT DEFAULT 1,  		-- 列名为level，数据类型为INT，默认值为1
     exp INT,
-    gold DECIMAL(10,2)		-- 长度为10，并且保留两位小数的十进制数
+    gold DECIMAL(10,2)			-- 长度为10，并且保留两位小数的十进制数
 );
 ```
 
+##### 修改表结构
 
+```mysql
+-- 添加列
+ALTER TABLE <table_name> ADD <col> <value_type>;
+-- 删除列
+ALTER TABLE <table_name> DROP <col>;
+```
 
+```mysql
+-- 将player表的level列的数据类型设置为INT，默认值设置为1
+ALTER TABLE player MODIFY level INT DEFAULT 1;
+```
 
+| 语法                                                         | 解释                           |
+| ------------------------------------------------------------ | ------------------------------ |
+| `ALTER TABLE <table_name> MODIFY <col> <value_type> DEFAULT <value>;` | 设置默认值为\<value>           |
+| `ALTER TABLE <table_name> MODIFY <col> <value_type> [NOT] NULL;` | 设置[不]可以为NULL             |
+| `ALTER TABLE <table_name> ADD UNIQUE (<col>);`               | 设置为唯一性，**需要使用括号** |
+| `ALTER TABLE <table_name> MODIFT <col> <value_type> PRIMARY KEY;` | 设置为主键，唯一且不为空       |
+| `ALTER TABLE <child_table> ADD FOREIGN KEY (<child_col>) REFERENCES <parent_table> (parent_col);` | 设置从键                       |
 
+`<child_table>`是从表
 
+`<child_col>`是从表中的外键列
+
+`<parent_table>`是主表
+
+`<parent_col>`是主表中的主键列
 
 #### 数据的增删改
 
-#### 增
+##### 增
 
 ```mysql
+-- 在<table_name>表中插入<col1>为<value1>,<col2>为<value2>,<col3>为<value3>的数据
 INSERT INTO <table_name> (<col1>, <col2>, <col3>) VALUES (<value1>, <value2>, <value3>);
 ```
 
-当`VALUES`后面的数据与列的个数对应，则可以不用写列，e.g. `INSERT INTO <table_name> VALUES (v1, v2, v3);`
+当`VALUES`后面的数据与列的个数对应，则可以不用写列
 
-也可以只使用部分列，没有使用的列使用默认值，e.g. `INSERT INTO <table_name> (col1, col2) VALUES (v1, v2);`
+e.g. `INSERT INTO player (id, name, level) VALUES (1, '张三', 10);`可以写成 `INSERT INTO player VALUES (1, '张三', 10);`
+
+也可以只使用部分列，没有使用的列将使用默认值
+
+e.g. `INSERT INTO player (id, name) VALUES (2, '李四');`没有被定义的`level`将以默认值代替
+
+也可以同时插入多条数据
+
+e.g. `INSERT INTO player (id, name) VALUES (3, '王五'), (4, '赵六');`
+
+##### 删
+
+```mysql
+-- 删除<table_name>表中所有<col>列为<value>的数据
+DELETE FROM <table_name> WHERE <col>=<value>;
+```
+
+e.g. `DELETE FROM test;`删除test表中所有的数据
+
+##### 改
+
+```mysql
+-- 将<tablue_name>表的<col2>列为<value2>数据的<col1>赋值为<value1>
+UPDATE <table_name> SET <col1> = <value1> WHERE <col2> = <value2>;
+```
+
+e.g. `UPDATE player SET level = 1 WHERE name = '李四';`将李四的等级修改为1
+
+不加`WHERE`限制范围就是对所有的数据修改，多个设置可以使用`,`隔开
+
+e.g. `UPDATE player SET level=1, exp=0;`将所有玩家的等级修改为1，经验修改为0
 
 
 
@@ -94,7 +149,7 @@ INSERT INTO <table_name> (<col1>, <col2>, <col3>) VALUES (<value1>, <value2>, <v
 
 e.g. `ORDER BY level DES, exp ASC`等级降序，经验升序
 
-### 聚合函数
+#### 聚合函数
 
 聚合函数对某列执行一些计算，比如返回项目`COUNT()`，求和`SUN()`、平均`AVG()`、最大值`MAX()`、最小值`MIN()`等
 
@@ -108,3 +163,57 @@ SELECT AVG(level) FROM player
 `GROUP BY`分组语法
 
 待续
+
+---
+
+
+
+### 数据导入和导出
+
+#### 导出
+
+在MySQL-Shell中使用命令
+
+```mysql
+# -u指定用户，-p后续输入密码，game > game.sql将数据库game导出到game.sql文件中
+mysqldump -u root -p game > game.sql
+# 将game数据库的player表导出到player.sql中
+mysqldump -u root -o game player > player.sql
+```
+
+#### 导入
+
+在Shell中使用命令
+
+```shell
+# 将game.sql的数据导入到game数据库中
+mysql -u root -p game < game.sql
+```
+
+
+
+
+
+
+
+---
+
+### 数据类型
+
+#### 数值类型
+
+| 数据类型     | 大小                                     | 范围(有符号)                                                 | 范围(无符号)                                                 | 用途            |
+| ------------ | ---------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | --------------- |
+| TINYINT      | 1 Bytes                                  | (-128，127)                                                  | (0，255)                                                     | 小整数值        |
+| SMALLINT     | 2 Bytes                                  | (-32,768，32,767)                                            | (0，65 535)                                                  | 大整数值        |
+| MEDIUMINT    | 3 Bytes                                  | (-8,388,608，8 388,607)                                      | (0，16 777 215)                                              | 大整数值        |
+| INT或INTEGER | 4 Bytes                                  | (-2,147,483,648，2,147,483,647)                              | (0，4 294 967 295)                                           | 大整数值        |
+| BIGINT       | 8 Bytes                                  | (-9,223,372,036,854,775,808，9,223,372,036,854,775,807)      | (0，18 446 744 073 709 551 615)                              | 极大整数值      |
+| FLOAT        | 4 Bytes                                  | (-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38) | 0，(1.175 494 351 E-38，3.402 823 466 E+38)                  | 单精度 浮点数值 |
+| DOUBLE       | 8 Bytes                                  | (-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4 E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308) | 0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308) | 双精度 浮点数值 |
+| DECIMAL      | 对DECIMAL(M,D) ，如果M>D，为M+2否则为D+2 | 依赖于M和D的值                                               | 依赖于M和D的值                                               | 小数值          |
+
+
+
+
+
