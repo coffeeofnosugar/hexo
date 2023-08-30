@@ -95,7 +95,7 @@ MySQL默认不允许远程连接，修改配置
 3. `use mysql;`进入mysql数据库（配置mysql的一个数据库）
 4. `select user,host from user;`查看用户的链接方式
 
-<img src="/../images/linux/mysql/链接方式.png">
+<img src="/../images/linux/mysql/连接方式.png">
 
 5. 使用`update user set host='%' where user='root';`将root的链接方式修改为%
 6. `systemctl restart mysqld`重启mysql服务器
@@ -121,7 +121,7 @@ firewall-cmd --reload
 | --------------------------------------------------- | ------------------------------------ |
 | `SELECT <col> FROM <table>;`                        | 显示`<table>`表中的`<col>`列中的数据 |
 | `SELECT <col> FROM <table> WHERE <condition>;`      | 显示`<col>`中符合`<condition>`的数据 |
-| `SELECT <col> FROM <table> ORDER BY <col> ASC|DESC;` | 按照排序显示查询数据                 |
+| `SELECT <col> FROM <table> ORDER BY <col> ASC\|DESC;` | 按照排序显示查询数据                 |
 
 ##### `WHERE <condition>`限制查询目标语法
 
