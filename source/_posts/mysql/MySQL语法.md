@@ -4,6 +4,64 @@ date: 2023-08-29 20:50:06
 tags: MySQL
 ---
 
+### MySQL客户端
+
+- 如果安装了MySQL-Shell可以直接使用`mysqlsh`进入MySQL-Shell客户端
+- 也可以使用`mysql -u root -p`来进入MySQL客户端
+
+#### 数据库语法
+
+| 语法                               | 解释           |
+| ---------------------------------- | -------------- |
+| `SHOW DATABASES;`                  | 展示所有数据库 |
+| `CREATE DATABASE <database_name>;` | 创建数据库     |
+| `DROP DATABASE <database_name>;`   | 删除数据库     |
+| `USE <database_name>;`             | 选择数据库     |
+
+#### 表语法
+
+| 语法                                        | 解释       |
+| ------------------------------------------- | ---------- |
+| `SHOW TABLES;`                              | 展示所有表 |
+| `CREATE TABLE <table_name> <表的结构定义>;` | 创建表     |
+| `DROP TABLE <table_name>;`                  | 删除表     |
+
+##### `<表的结构定义>`语法
+
+在创建表的时候可以，定义列名和列的格式
+
+```mysql
+CREATE TABLE player (
+	id INT,					-- 列名为id，格式为INT
+    name VARCHAR(100),		-- 长度为100的变长字符串
+    level INT,
+    exp INT,
+    gold DECIMAL(10,2)		-- 长度为10，并且保留两位小数的十进制数
+);
+```
+
+
+
+
+
+
+
+#### 数据的增删改
+
+#### 增
+
+```mysql
+INSERT INTO <table_name> (<col1>, <col2>, <col3>) VALUES (<value1>, <value2>, <value3>);
+```
+
+当`VALUES`后面的数据与列的个数对应，则可以不用写列，e.g. `INSERT INTO <table_name> VALUES (v1, v2, v3);`
+
+也可以只使用部分列，没有使用的列使用默认值，e.g. `INSERT INTO <table_name> (col1, col2) VALUES (v1, v2);`
+
+
+
+---
+
 ### 查询语句
 
 | 语法                                                | 解释                                 |
@@ -22,12 +80,12 @@ tags: MySQL
 - 使用`LINK`关键字(简化版的正则表达式)：`WHERE name LINK '王%'`，查找所有姓王的玩家，`%`可以代替多个字符，`_`代替一个字符
 - 使用`REGEXP`关键字(正则表达式)
 
-#### 注意事项
-
-数据库中`null` "空"不等于`""` "空字符串"
-
-- 查找`null` ''空''：`WHERE email is null`
-- 查找`""` "空字符串"：`WHERE email = ''`
+> **注意事项**
+>
+> 数据库中`null` "空"不等于`""` "空字符串"
+>
+> - 查找`null` ''空''：`WHERE email is null`
+> - 查找`""` "空字符串"：`WHERE email = ''`
 
 #### `ORDER BY <col> ASC|DESC`排序语法
 
