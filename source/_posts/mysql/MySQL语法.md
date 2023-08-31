@@ -6,8 +6,19 @@ tags: MySQL
 
 ### MySQL客户端
 
-- 如果安装了MySQL-Shell可以直接使用`mysqlsh`进入MySQL-Shell客户端
+- 如果安装了MySQL-Shell可以直接使用`mysqlsh`进入MySQL-Shell客户端，然后使用`\connect root@localhost`来连接数据库
 - 也可以使用`mysql -u root -p`来进入MySQL客户端
+
+#### MySQL-Shell语法
+
+| 语法                      | 解释                            |
+| ------------------------- | ------------------------------- |
+| `\connect root@localhost` | 连接数据库                      |
+| `\help`                   | 帮助                            |
+| `\py`                     | 切换到python语言                |
+| `\sql`                    | 切换成sql语言                   |
+| `\js`                     | 切换成js语言                    |
+| `\use <database_name>`    | 切换并进入<database_name>数据库 |
 
 #### 数据库语法
 
@@ -18,7 +29,35 @@ tags: MySQL
 | `DROP DATABASE <database_name>;`   | 删除数据库     |
 | `USE <database_name>;`             | 选择数据库     |
 
-#### 表语法
+
+---
+
+### 数据导入和导出
+
+#### 导出
+
+在MySQL-Shell中使用命令
+
+```mysql
+# -u指定用户，-p后续输入密码，game > game.sql将数据库game导出到game.sql文件中
+mysqldump -u root -p game > game.sql
+# 将game数据库的player表导出到player.sql中
+mysqldump -u root -p game player > player.sql
+```
+
+#### 导入
+
+在Shell中使用命令
+
+```shell
+# 将game.sql的数据导入到game数据库中
+mysql -u root -p game < game.sql
+```
+
+---
+
+
+### 表语法
 
 | 语法                                        | 解释       |
 | ------------------------------------------- | ---------- |
@@ -70,7 +109,9 @@ ALTER TABLE player MODIFY level INT DEFAULT 1;
 
 `<parent_col>`是主表中的主键列
 
-#### 数据的增删改
+---
+
+### 数据的增删改
 
 ##### 增
 
@@ -156,43 +197,120 @@ e.g. `ORDER BY level DES, exp ASC`等级降序，经验升序
 ```mysql
 -- 返回所有玩家的总人数
 SELECT COUNT(*) FROM player
--- 返回等级的平均值
+-- 返回所有玩家的平均等级
 SELECT AVG(level) FROM player
 ```
 
-`GROUP BY`分组语法
-
-待续
-
----
-
-
-
-### 数据导入和导出
-
-#### 导出
-
-在MySQL-Shell中使用命令
+#### `GROUP BY`分组语法
 
 ```mysql
-# -u指定用户，-p后续输入密码，game > game.sql将数据库game导出到game.sql文件中
-mysqldump -u root -p game > game.sql
-# 将game数据库的player表导出到player.sql中
-mysqldump -u root -o game player > player.sql
+-- 将所有玩家以sex这一列分组，并展示其和
+SELECT sex, COUNT(*) FROM player GROUP BY sex;
 ```
 
-#### 导入
-
-在Shell中使用命令
+输出结果：男有140，女有65，NULL有3，""有1
 
 ```shell
-# 将game.sql的数据导入到game数据库中
-mysql -u root -p game < game.sql
+ MySQL  localhost:33060+ ssl  game  SQL > SELECT sex, count(*) FROM player GROUP BY sex;
++------+----------+
+| sex  | count(*) |
++------+----------+
+| 男   |      140 |
+| 女   |       65 |
+| NULL |        3 |
+|      |        1 |
++------+----------+
+4 rows in set (0.0008 sec)
 ```
 
+`GOUP BY`经常与`HAVING`和<a href="./#`ORDER BY <col> ASC|DESC`排序语法">`ORDER BY`</a>搭配使用
 
+```mysql
+-- 将等级分组统计数量，再显示大于4个的组
+SELECT level, COUNT(*) FROM player GROUP BY level HAVING COUNT(*) > 4;
+-- 将等级分组统计数量，再显示大于4个的组，并按降序排列
+SELECT level, COUNT(*) FROM player GROUP BY level HAVING COUNT(*) > 4 ORDER BY count(level) DESC;
+```
 
+#### `LIMIT [num1] num2`语法
 
+用来控制显示数量和范围
+
+- `num1`可选参数，偏移量。如果为4，表示从第5个数开始展示
+- `num2`显示的数量
+
+```mysql
+-- 显示前三条数据
+SELECT id, name FROM player LIMIT 3;
++----+--------+
+| id | name   |
++----+--------+
+|  1 | 张三   |
+|  2 | 赵四儿 |
+|  3 | 王五   |
++----+--------+
+-- 从第5条数据开始，显示三条
+SELECT id, name FROM player LIMIT 4, 3;
++----+--------+
+| id | name   |
++----+--------+
+|  5 | 范德彪 |
+|  6 | 马大帅 |
+|  7 | 王小二 |
++----+--------+
+```
+
+#### `DISTINCT <col>`去重
+
+```mysql
+-- 显示去重后的性别
+SELECT DISTINCT sex FROM player;
+```
+
+#### `UNION [ALL]`并集
+
+集合A有α，集合B也有α，查询结果α默认只会显示一次
+
+加上`ALL`之后，α会显示两次
+
+```mysql
+-- 查询等级在1到3  或  经验在100到500之间的玩家，重复的只会显示一次
+SELECT * FROM player WHERE level BETWEEN 1 AND 3
+UNION
+SELECT * FROM player WHERE exp BETWEEN 100 AND 500;
+-- 查询等级在1到3  或  经验在100到500之间的玩家，重复的会多次选择
+SELECT * FROM player WHERE level BETWEEN 1 AND 3
+UNION ALL
+SELECT * FROM player WHERE exp BETWEEN 100 AND 500;
+```
+
+#### `INTERSECT`交集
+
+```mysql
+-- 查询等级在1到3  且  经验在100到500之间的玩家
+SELECT * FROM player WHERE level BETWEEN 1 AND 3
+INTERSECT
+SELECT * FROM player WHERE exp BETWEEN 100 AND 500;
+```
+
+#### `EXCEPT`差集
+
+```mysql
+-- 查询等级在1到3  且  经验 不 在100到500之间的玩家
+SELECT * FROM player WHERE level BETWEEN 1 AND 3
+EXCEPT
+SELECT * FROM player WHERE exp BETWEEN 100 AND 500;
+```
+
+#### 综合练习
+
+```mysql
+SELECT SUBSTR(name, 1, 1), COUNT(SUBSTR(name, 1, 1)) FROM player		-- 选择表和要显示的列
+GROUP BY SUBSTR(name, 1, 1)												-- 截取name：从第一个字符串开始，截取一个长度
+HAVING COUNT(SUBSTR(name, 1, 1)) >= 5									-- 展示数量大于5的
+ORDER BY COUNT(SUBSTR(name, 1, 1)) DESC									-- 降序
+LIMIT 3, 4																-- 限制显示的数量，和偏移量：只显示3个，并向后偏移4位，显示5,6,7
+```
 
 
 
