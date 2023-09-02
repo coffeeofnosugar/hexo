@@ -57,10 +57,11 @@ mysql -u root -p game < game.sql
 ---
 
 
-### 表语法
+### 表结构
 
 | 语法                                        | 解释       |
 | ------------------------------------------- | ---------- |
+| `DESC <table_name>`                         | 展示表结构 |
 | `SHOW TABLES;`                              | 展示所有表 |
 | `CREATE TABLE <table_name> <表的结构定义>;` | 创建表     |
 | `DROP TABLE <table_name>;`                  | 删除表     |
@@ -171,7 +172,7 @@ e.g. `UPDATE player SET level=1, exp=0;`将所有玩家的等级修改为1，经
 - 可以使用<,>,=
 - 多个条件可以使用`AND`和`OR`连接(需要注意优先级`AND`优先于`OR`，还可以使用括号改变优先顺序)
 - 使用`IN`限制范围，e.g. `WHERE level IN (1, 3, 5)`限制条件为：等级等于1,3,5
-- 使用`WHERE BETWEEN <num1> AND <num2>`限制范围，e.g. `WHERE level BETWEEN 1 AND 10`：等级在1到10之间(包括1和10)，等价于`WHERE level >= 1 AND level <= 10`
+- 使用`WHERE <col> BETWEEN <num1> AND <num2>`限制范围，e.g. `WHERE level BETWEEN 1 AND 10`：等级在1到10之间(包括1和10)，等价于`WHERE level >= 1 AND level <= 10`
 - 使用`NOT`取反
 - 使用`LINK`关键字(简化版的正则表达式)：`WHERE name LINK '王%'`，查找所有姓王的玩家，`%`可以代替多个字符，`_`代替一个字符
 - 使用`REGEXP`关键字(正则表达式)
@@ -223,7 +224,7 @@ SELECT sex, COUNT(*) FROM player GROUP BY sex;
 4 rows in set (0.0008 sec)
 ```
 
-`GOUP BY`经常与`HAVING`和<a href="./#`ORDER BY <col> ASC|DESC`排序语法">`ORDER BY`</a>搭配使用
+`GOUP BY`经常与`HAVING`和`ORDER BY`搭配使用
 
 ```mysql
 -- 将等级分组统计数量，再显示大于4个的组
@@ -249,6 +250,9 @@ SELECT id, name FROM player LIMIT 3;
 |  2 | 赵四儿 |
 |  3 | 王五   |
 +----+--------+
+```
+
+```mysql
 -- 从第5条数据开始，显示三条
 SELECT id, name FROM player LIMIT 4, 3;
 +----+--------+
@@ -259,6 +263,8 @@ SELECT id, name FROM player LIMIT 4, 3;
 |  7 | 王小二 |
 +----+--------+
 ```
+
+
 
 #### `DISTINCT <col>`去重
 
@@ -311,6 +317,149 @@ HAVING COUNT(SUBSTR(name, 1, 1)) >= 5									-- 展示数量大于5的
 ORDER BY COUNT(SUBSTR(name, 1, 1)) DESC									-- 降序
 LIMIT 3, 4																-- 限制显示的数量，和偏移量：只显示3个，并向后偏移4位，显示5,6,7
 ```
+
+#### 子查询
+
+可以将查询结果看成一个整体，使用在大多数语法中
+
+```mysql
+-- 查询大于平均等级的玩家
+SELECT * FROM player where level > (SELECT AVG(level) FROM player);
+-- 查询等级与平均等级的差值
+SELECT level,
+(SELECT AVG(level) FROM player) as average,      -- 使用as关键字将这一列的名称变为average，原名称为(SELECT AVG(level) FROM player)
+level - (SELECT AVG(level) FROM player) as diff
+FROM player;
+-- 将查询结果创建成一个新的表
+CREATE TABLE player1 (SELECT id, name, level FROM player WHERE level BETWEEN 1 AND 5);
+-- 将查询的结果添加到其他表中
+INSERT INTO player1 (SELECT id, name, level FROM player WHERE level BETWEEN 5 AND 10);		-- 这样新建的表player1中就有等级1到10的玩家了
+-- 判断是否存在值，只会返回0和1
+SELECT EXISTS (SELECT * FROM player1 WHERE level > 10);  -- 返回0，没有结果
+SELECT EXISTS (SELECT * FROM player1 WHERE level > 5); 	 -- 返回1，有结果
+```
+
+
+
+
+
+---
+
+### 表关联
+
+用来查询多个表中的数据，关联的表中必须有相同的字段
+
+一般会使用表的主键和外键来关联
+
+#### `INNER JOIN`内连接
+
+只返回两个表都有的数据
+
+```mysql
+-- 查询并显示玩家表的id和武器表的player_id相同的数据(玩家排在前面)
+SELECT * FROM player INNER JOIN equip ON player.id = equip.player_id;
++-----+--------+-----+---------------------+-------+-----+-------+----+------------+-----------+
+|                                玩家表                           |            武器表            |
++-----+--------+-----+---------------------+-------+-----+-------+----+------------+-----------+
+| id  | name   | sex | email               | level | exp | gold  | id | name       | player_id |
++-----+--------+-----+---------------------+-------+-----+-------+----+------------+-----------+
+|  76 | 林克   | 男  | linke@qq.com        |    48 |  12 | 11.00 |  6 | 大师之剑   |        76 |
+| 157 | 张飞   | 男  | zhangfei@gmail.com  |    76 |  36 | 80.00 |  2 | 丈八蛇矛   |       157 |
+| 161 | 孙悟空 | 男  | sunwukong@gmail.com |    74 |  32 | 23.00 |  7 | 金箍棒     |       161 |
+| 177 | 关羽   | 男  | guanyu@gmail.com    |    19 |  60 | 36.00 |  1 | 青龙偃月刀 |       177 |
+| 186 | 曹操   | 男  | caocao@geekhour.net |    70 |  15 | 27.00 |  3 | 七星宝刀   |       186 |
+| 190 | 吕布   | 男  |                     |    77 |  43 | 31.00 |  9 | 赤兔马     |       190 |
+| 190 | 吕布   | 男  |                     |    77 |  43 | 31.00 |  8 | 方天画戟   |       190 |
++-----+--------+-----+---------------------+-------+-----+-------+----+------------+-----------+
+```
+
+```mysql
+-- 查询并显示武器表的player_id和玩家表的id相同的数据(武器表排在前面)
+SELECT * FROM equip INNER JOIN player ON equip.player_id = player.id;
++-----+--------+-----+---------------------+-------+-----+-------+----+------------+-----------+
+|           武器表             |                           玩家表                                |
++----+------------+-----------+-----+--------+-----+---------------------+-------+-----+-------+
+| id | name       | player_id | id  | name   | sex | email               | level | exp | gold  |
++----+------------+-----------+-----+--------+-----+---------------------+-------+-----+-------+
+|  6 | 大师之剑   |        76 |  76 | 林克   | 男  | linke@qq.com        |    48 |  12 | 11.00 |
+|  2 | 丈八蛇矛   |       157 | 157 | 张飞   | 男  | zhangfei@gmail.com  |    76 |  36 | 80.00 |
+|  7 | 金箍棒     |       161 | 161 | 孙悟空 | 男  | sunwukong@gmail.com |    74 |  32 | 23.00 |
+|  1 | 青龙偃月刀 |       177 | 177 | 关羽   | 男  | guanyu@gmail.com    |    19 |  60 | 36.00 |
+|  3 | 七星宝刀   |       186 | 186 | 曹操   | 男  | caocao@geekhour.net |    70 |  15 | 27.00 |
+|  9 | 赤兔马     |       190 | 190 | 吕布   | 男  |                     |    77 |  43 | 31.00 |
+|  8 | 方天画戟   |       190 | 190 | 吕布   | 男  |                     |    77 |  43 | 31.00 |
++----+------------+-----------+-----+--------+-----+---------------------+-------+-----+-------+
+```
+
+
+
+#### `LEFT INJO`左连接
+
+返回左表中所有的数据，和右表中匹配的数据（右表中没有的数据用NULL填充）
+
+```mysql
+-- 显示player表，并将equip表依据player.id = equip.player_id挂载在后面
+SELECT * FROM player LEFT JOIN equip ON player.id = equip.player_id;
+```
+
+数据较多就不显示例子了，与内连接第一个例子结果类似
+
+#### `RIGHT INJO`右连接
+
+返回右表中所有的数据，和左表中匹配的数据（左表中没有的数据用NULL填充）
+
+```mysql
+-- 显示equip表，并将player表依据player.id = equip.player_id挂载在后面
+SELECT * FROM player RIGHT join equip on player.id = equip.player_id;
++------+--------+------+---------------------+-------+------+-------+----+------------+-----------+
+| id   | name   | sex  | email               | level | exp  | gold  | id | name       | player_id |
++------+--------+------+---------------------+-------+------+-------+----+------------+-----------+
+|  177 | 关羽   | 男   | guanyu@gmail.com    |    19 |   60 | 36.00 |  1 | 青龙偃月刀 |       177 |
+|  157 | 张飞   | 男   | zhangfei@gmail.com  |    76 |   36 | 80.00 |  2 | 丈八蛇矛   |       157 |
+|  186 | 曹操   | 男   | caocao@geekhour.net |    70 |   15 | 27.00 |  3 | 七星宝刀   |       186 |
+| NULL | NULL   | NULL | NULL                |  NULL | NULL |  NULL |  4 | 长剑       |      NULL |
+| NULL | NULL   | NULL | NULL                |  NULL | NULL |  NULL |  5 | 铁盾       |      NULL |
+|   76 | 林克   | 男   | linke@qq.com        |    48 |   12 | 11.00 |  6 | 大师之剑   |        76 |
+|  161 | 孙悟空 | 男   | sunwukong@gmail.com |    74 |   32 | 23.00 |  7 | 金箍棒     |       161 |
+|  190 | 吕布   | 男   |                     |    77 |   43 | 31.00 |  8 | 方天画戟   |       190 |
+|  190 | 吕布   | 男   |                     |    77 |   43 | 31.00 |  9 | 赤兔马     |       190 |
++------+--------+------+---------------------+-------+------+-------+----+------------+-----------+
+```
+
+#### `WHERE`关联
+
+```mysql
+-- 在player表和equip表中查询并显示player.id = equip.player_id相等的数据
+SELECT * FROM player, equip WHERE player.id = equip.player_id;
++-----+--------+-----+---------------------+-------+-----+-------+----+------------+-----------+
+| id  | name   | sex | email               | level | exp | gold  | id | name       | player_id |
++-----+--------+-----+---------------------+-------+-----+-------+----+------------+-----------+
+|  76 | 林克   | 男  | linke@qq.com        |    48 |  12 | 11.00 |  6 | 大师之剑   |        76 |
+| 157 | 张飞   | 男  | zhangfei@gmail.com  |    76 |  36 | 80.00 |  2 | 丈八蛇矛   |       157 |
+| 161 | 孙悟空 | 男  | sunwukong@gmail.com |    74 |  32 | 23.00 |  7 | 金箍棒     |       161 |
+| 177 | 关羽   | 男  | guanyu@gmail.com    |    19 |  60 | 36.00 |  1 | 青龙偃月刀 |       177 |
+| 186 | 曹操   | 男  | caocao@geekhour.net |    70 |  15 | 27.00 |  3 | 七星宝刀   |       186 |
+| 190 | 吕布   | 男  |                     |    77 |  43 | 31.00 |  9 | 赤兔马     |       190 |
+| 190 | 吕布   | 男  |                     |    77 |  43 | 31.00 |  8 | 方天画戟   |       190 |
++-----+--------+-----+---------------------+-------+-----+-------+----+------------+-----------+
+```
+
+```mysql
+-- 可以给表名赋上别名，和上面的结果是一样的
+SELECT * FROM player p, equip e WHERE p.id = e.player_id;
+```
+
+
+
+---
+
+### 索引
+
+
+
+
+
+
 
 
 
