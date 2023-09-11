@@ -101,6 +101,7 @@ ALTER TABLE player MODIFY level INT DEFAULT 1;
 | `ALTER TABLE <table_name> ADD UNIQUE (<col>);`               | 设置为唯一性，**需要使用括号** |
 | `ALTER TABLE <table_name> MODIFT <col> <value_type> PRIMARY KEY;` | 设置为主键，唯一且不为空       |
 | `ALTER TABLE <child_table> ADD FOREIGN KEY (<child_col>) REFERENCES <parent_table> (parent_col);` | 设置从键                       |
+| `ALTER TABLE <table_name> ADD INDEX <index_name> (col);`     | 设置索引                       |
 
 `<child_table>`是从表
 
@@ -154,6 +155,10 @@ e.g. `UPDATE player SET level = 1 WHERE name = '李四';`将李四的等级修�
 不加`WHERE`限制范围就是对所有的数据修改，多个设置可以使用`,`隔开
 
 e.g. `UPDATE player SET level=1, exp=0;`将所有玩家的等级修改为1，经验修改为0
+
+
+
+
 
 
 
@@ -455,11 +460,50 @@ SELECT * FROM player p, equip e WHERE p.id = e.player_id;
 
 ### 索引
 
+是一种用来提高查询效率的数据结构，可以帮助我们快速的定位到我们想要的数据
 
+如果没有索引的话，就只能从头开始遍历所有的数据，直到找到满足条件的数据为止。当数据非常少的时候没有什么问题，但是当数据量非常大的时候，查询效率就会直线下降，索引就是为了解决这个问题而产生的
 
+#### 创建索引
 
+```mysql
+CREATE [UNIQE|FULLTEXT|SPATYAL] INDEX <index_name> ON <table_name(index_col_name,...)>
+```
 
+`[UNIQE|FULLTEXT|SPATYAL]`:分别代表唯一索引、全文索引、空间索引。可不写，默认为唯一索引
 
+`<index_name>`:索引名称
+
+`<table_name(index_col_name,...)>`:给指定的表的指定列创建索引
+
+e.g.:`CREATE INDEX email_index ON player(name)`
+
+#### 查看索引
+
+```mysql
+SHOW INDEX FROM <talbe_name>
+# 输出：
++--------+------------+------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table  | Non_unique | Key_name   | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++--------+------------+------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| player |          1 | name_index |            1 | name        | A         |         209 |     NULL | NULL   | YES  | BTREE      |         |               | YES     | NULL       |
++--------+------------+------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+
+```
+
+#### 索引的使用
+
+上面使用`CREATE INDEX email_index ON player(name);`给player的name添加了索引
+
+使用方法：直接查找这个表的这个列`SELECT * FROM player WHERE name like "王%";`就能很快速的查找出姓王的人了
+
+#### 删除索引
+
+`DROP INDEX <index_name> ON <table_name>`;
+
+e.g.: `DROP INDEX name_index ON player;`
+
+还能使用修改表结构的方式添加索引：`ALTER TALBE player ADD INDEX name_index (name);`
 
 
 
