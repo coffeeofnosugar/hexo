@@ -72,7 +72,7 @@ mysql -u root -p game < game.sql
 
 ```mysql
 CREATE TABLE player (
-	id INT NOT NULL,			-- 列名为id，数据类型为INT，并且不能为NULL
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,			-- 列名为id，数据类型为INT，不能为NULL，并且设置为自增长的主键
     name VARCHAR(100) UNIQUE,	-- 长度为100的变长字符串这个字段必须为唯一值
     level INT DEFAULT 1,  		-- 列名为level，数据类型为INT，默认值为1
     exp INT,
@@ -477,6 +477,17 @@ CREATE [UNIQE|FULLTEXT|SPATYAL] INDEX <index_name> ON <table_name(index_col_name
 `<table_name(index_col_name,...)>`:给指定的表的指定列创建索引
 
 e.g.:`CREATE INDEX email_index ON player(name)`
+
+在创建表的同时添加索引：
+
+```mysql
+CREATE TABLE player (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL,
+    INDEX name_index (name)					-- 给name列创建索引
+);
+```
 
 #### 查看索引
 
