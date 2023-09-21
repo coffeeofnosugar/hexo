@@ -316,3 +316,14 @@ tags:
 <!-- more -->
 
 <img class="half" src="/../images/exercise/2023-09-14.jpg"></img>
+
+
+---
+
+#### 2023年9月17日
+
+
+
+<!-- more -->
+
+<img class="half" src="/../images/exercise/2023-09-17.jpg"></img>
