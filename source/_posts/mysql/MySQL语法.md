@@ -30,6 +30,8 @@ tags: MySQL
 | `USE <database_name>;`             | 选择数据库     |
 
 
+
+
 ---
 
 ### 数据导入和导出
@@ -54,6 +56,8 @@ mysqldump -u root -p game player > player.sql
 mysql -u root -p game < game.sql
 ```
 
+
+
 ---
 
 
@@ -66,7 +70,7 @@ mysql -u root -p game < game.sql
 | `CREATE TABLE <table_name> <表的结构定义>;` | 创建表     |
 | `DROP TABLE <table_name>;`                  | 删除表     |
 
-##### 定义表结构
+#### 定义表结构
 
 在创建表的时候可以，定义列名、列的<a href="./#数据类型">数据类型</a>和<a href="./#定义表结构">表结构</a>
 
@@ -80,7 +84,7 @@ CREATE TABLE player (
 );
 ```
 
-##### 修改表结构
+#### 修改表结构
 
 ```mysql
 -- 添加列
@@ -111,11 +115,13 @@ ALTER TABLE player MODIFY level INT DEFAULT 1;
 
 `<parent_col>`是主表中的主键列
 
+
+
 ---
 
 ### 数据的增删改
 
-##### 增
+#### 增
 
 ```mysql
 -- 在<table_name>表中插入<col1>为<value1>,<col2>为<value2>,<col3>为<value3>的数据
@@ -134,7 +140,7 @@ e.g. `INSERT INTO player (id, name) VALUES (2, '李四');`没有被定义的`lev
 
 e.g. `INSERT INTO player (id, name) VALUES (3, '王五'), (4, '赵六');`
 
-##### 删
+#### 删
 
 ```mysql
 -- 删除<table_name>表中所有<col>列为<value>的数据
@@ -143,7 +149,7 @@ DELETE FROM <table_name> WHERE <col>=<value>;
 
 e.g. `DELETE FROM test;`删除test表中所有的数据
 
-##### 改
+#### 改
 
 ```mysql
 -- 将<tablue_name>表的<col2>列为<value2>数据的<col1>赋值为<value1>
@@ -155,10 +161,6 @@ e.g. `UPDATE player SET level = 1 WHERE name = '李四';`将李四的等级修�
 不加`WHERE`限制范围就是对所有的数据修改，多个设置可以使用`,`隔开
 
 e.g. `UPDATE player SET level=1, exp=0;`将所有玩家的等级修改为1，经验修改为0
-
-
-
-
 
 
 
@@ -343,8 +345,6 @@ INSERT INTO player1 (SELECT id, name, level FROM player WHERE level BETWEEN 5 AN
 SELECT EXISTS (SELECT * FROM player1 WHERE level > 10);  -- 返回0，没有结果
 SELECT EXISTS (SELECT * FROM player1 WHERE level > 5); 	 -- 返回1，有结果
 ```
-
-
 
 
 
