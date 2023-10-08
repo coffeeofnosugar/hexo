@@ -5,7 +5,7 @@ tags: Git
 ---
 
 
-### .gitignore文件
+## 忽略已跟踪的文件
 
 .gitignore文件只能忽略未跟踪状态的文件，如果已经被跟踪了，可以使用下面的两种方法
 
@@ -14,6 +14,8 @@ tags: Git
 
 
 ### git rm --cached \<file>
+
+彻底忽略该文件，push后，远程也将忽略该文件
 
 如果远程仓库已经有了logs文件夹，使用三步完成
 
@@ -26,6 +28,8 @@ tags: Git
 
 
 ### skip-worktree和assume-unchanged
+
+只在自己的工作区内忽略文件
 
 #### skip-worktree
 
@@ -59,7 +63,7 @@ git ls-files -v | grep '^h\'
 
 ---
 
-# .gitignore
+## .gitignore文件
 
 在此记录一下各个项目的`.gitignore`文件内容
 
