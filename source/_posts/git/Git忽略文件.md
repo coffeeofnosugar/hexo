@@ -9,8 +9,6 @@ tags: Git
 
 .gitignore文件只能忽略未跟踪状态的文件，如果已经被跟踪了，可以使用下面的两种方法
 
----
-
 
 
 ### git rm --cached \<file>
@@ -22,8 +20,6 @@ tags: Git
 1. 使用命令删除文件的跟踪状态 `git rm --cached logs/`
 2. 此时本地工作区修改还在，需要更新一下/gitignore文件
 3. 最后使用命令删除远程仓库对应的文件`git add . && git commit -m "xx" && git push`
-
----
 
 
 
@@ -60,6 +56,8 @@ git ls-files -v | grep '^h\'
 参考
 
 [一文带你彻底搞懂Git！](https://zhuanlan.zhihu.com/p/559692211)
+
+
 
 ---
 
