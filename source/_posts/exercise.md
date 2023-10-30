@@ -327,3 +327,19 @@ tags:
 <!-- more -->
 
 <img class="half" src="/../images/exercise/2023-09-17.jpg"></img>
+
+
+---
+
+### 2023年10月
+
+
+---
+
+#### 2023年10月30日
+
+
+
+<!-- more -->
+
+<img class="half" src="/../images/exercise/2023-10-30.jpg"></img>
