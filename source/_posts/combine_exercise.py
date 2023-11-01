@@ -10,7 +10,13 @@ def write_file():
     else:
         last_date = datetime(1998, 9, 20)
     
-    for item in os.listdir("./_exercise/"):
+    # ./_exercise/路径下所有文件名的列表
+    file_list = os.listdir("./_exercise/")
+
+    if not any(item in filename_list for item in file_list):
+        return 0
+
+    for item in file_list:
         if item not in filename_list:
             with open("./exercise.md", 'a', encoding="utf-8") as file:
                 with open(f"./_exercise/{item}", 'r', encoding="utf-8") as file_item:
@@ -37,15 +43,22 @@ def write_file():
             print(f"写入{item}")
 
 def add_exercise_filename(filename_):
+    """
+    写入拼接的文件名
+    """
     filename_list = read_json()
     filename_list.append(filename_)
     with open("./_exercise_filename.json", 'w', encoding="utf-8") as file:
         file.write(json.dumps(filename_list, indent=4))
 
 def read_json() -> list:
+    """
+    读取已经拼接的文件名
+    """
     with open("./_exercise_filename.json", 'r', encoding="utf-8") as file:
         filename_list = json.loads(file.read())
         return filename_list
 
 if __name__ == "__main__":
-    write_file()
+    if not write_file():
+        print("无新增文件")
