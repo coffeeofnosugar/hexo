@@ -49,7 +49,7 @@ if __name__ == "__main__":
         monthFile = monthDate + "_exercise.md"
         if monthFile not in os.listdir(path):
             with open(os.path.join(path, monthFile), 'w', encoding='utf-8') as file:
-                content = f"""---\ntitle: {monthDate} 运动\ndate: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\ntags: \n  -运动\n  -日常\n---\n\n<link rel="stylesheet" href="/../css/base.css">\n<link rel="stylesheet" href="/../css/center.css">\n<link rel="stylesheet" href="/../css/images.css">\n"""
+                content = f"""---\ntitle: {monthDate} 运动\ndate: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\ntags: \n  - 运动\n  - 日常\n---\n\n<link rel="stylesheet" href="/../css/base.css">\n<link rel="stylesheet" href="/../css/center.css">\n<link rel="stylesheet" href="/../css/images.css">\n"""
                 file.write(content + f"\n--- \n\n### {item.title}\n" + item.content)
                 monthToDate[monthFile] = [item.title]
                 logging.info(f"创建月文件{monthFile}并写入{item.title}")

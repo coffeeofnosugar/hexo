@@ -83,15 +83,15 @@ set number
 
 前面不是命名了全局变量`XDG_DATA_HOME`吗，这个时候就用上了
 
-创建路径`/usr/local/nvim-linux64/config/nvim/site/autoload/`
+将[plug.vim](https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim)文件放在以下路径
 
-并将`plug.vim`文件放在这个路径下
+windows: `./nvim-win64/config/nvim-data/site/autoload/`
 
-[Download plug.vim](https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim)
+linux: `./nvim-linux64/config/nvim/site/autoload/`
+
+
 
 ---
-
-
 
 ### 我的配置
 
