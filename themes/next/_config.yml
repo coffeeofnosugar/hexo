@@ -226,8 +226,8 @@ footer:
 
   # Beian ICP and gongan information for Chinese users. See: https://beian.miit.gov.cn, http://www.beian.gov.cn
   beian:
-    enable: false
-    icp:
+    enable: true
+    icp: 鄂ICP备2023026521号-1
     # The digit in the num of gongan beian.
     gongan_id:
     # The full num of gongan beian.
@@ -262,8 +262,8 @@ post_meta:
 # Post wordcount display settings
 # Dependencies: https://github.com/next-theme/hexo-word-counter
 symbols_count_time:
-  separated_meta: true
-  item_text_total: true
+  separated_meta: false  # 设置为false就是取消显示"站点总字数"汉字，只显示图标和数值
+  item_text_total: false # 同上，取消显示"站点阅读时长"
 
 # Use icon instead of the symbol # to indicate the tag at the bottom of the post
 # false：在tag前加上#
@@ -975,4 +975,4 @@ tag_cloud:
     textColor: '#333'
     textHeight: 25
     outlineColor: '#E2E1D1'
-    maxSpeed: 0.1 
+    maxSpeed: 0.1
