@@ -57,14 +57,20 @@ Descripteion=pal server
 After=network.target  XXX.service
 
 [Service]
+# 指定运行的sh
+ExecStart=/path/to/start/PalServer.sh
+# 停止和重新加载服务时执行的命令
+ExecStop=/path/to/stop/command
+ExecReload=/path/to/reload/command
 # 指定服务器运行的用户和组
 User=yourusername
 Group=yourgroupname
 # 定义服务器在退出后是否自动重启
 Restart=always
-# 停止和重新加载服务时执行的命令
-ExecStop=/path/to/stop/command
-ExecReload=/path/to/reload/command
+
+# 默认格式
+[Install]
+WantedBy=multi-user.target
 ```
 
 ### 配置shell命令提示符

@@ -10,6 +10,12 @@ tags: Linux
 
 ### 用户
 
+#### 切换用户
+
+```shell
+sudo -u {username} -s
+```
+
 #### 创建用户
 
 ```shell
