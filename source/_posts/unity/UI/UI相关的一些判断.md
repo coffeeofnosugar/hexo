@@ -7,7 +7,7 @@ tags:
 
 ---
 
-### `GraphicRaycaster`组件
+### `Graphic Raycaster`组件
 
 <img class="half" src="/../images/unity/UI/GraphicRaycaster.png"></img>
 
@@ -122,20 +122,12 @@ public class Test : MonoBehaviour {
 }
 ```
 
----
-
-### 判断鼠标是否在UI上
-
-```C#
-# true：在UI上，false：不在UI上
-# 受GraphicRaycaster组件影响，鼠标在未激活GraphicRaycaster的canvas上时返回false
-bool isOn = UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()
-```
-
 
 
 ---
 
 转载：
+
 [unity Graphic Raycaster 作用详解](https://blog.csdn.net/Ling_SevoL_Y/article/details/107714884)
+
 [Unity中CanvasGroup组件](https://blog.csdn.net/qq_38721111/article/details/89190006)
