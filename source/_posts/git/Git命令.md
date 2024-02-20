@@ -134,7 +134,25 @@ git log --skip=3
 
 
 
+---
 
+### 其他
+
+#### 记住账号密码
+
+在linxu中每次都要输入账号密码，使用此命令后，push的时候再输入一次密码就不用再输入了
+
+```shell
+git config --global credential.helper store
+```
+
+#### 中文为ASCII码
+
+默认情况下git中文显示为ASCII码，使用该命令之后能正常显示中文
+
+```shell
+git config --global core.quotepath false
+```
 
 
 
