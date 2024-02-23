@@ -65,6 +65,12 @@ git ls-files -v | grep '^h\'
 
 在此记录一下各个项目的`.gitignore`文件内容
 
+
+
+https://github.com/github/gitignore/blob/main/Unity.gitignore
+
+
+
 #### python
 
 ```
@@ -682,3 +688,38 @@ MigrationBackup/
 FodyWeavers.xsd
 ```
 
+#### C++
+
+```
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
