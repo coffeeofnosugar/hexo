@@ -73,6 +73,20 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
+| systemctl常用命令              | 含义                              |
+| ------------------------------ | --------------------------------- |
+| `sudo systemctl daemon-reload` | 重载服务，每次修改后需要执行      |
+| `sudo systemctl start pal`     | 启动服务，可不用后缀直接使用`pal` |
+| `sudo systemctl stop pal`      | 停止服务                          |
+| `sudo systemctl restart pal`   | 重启服务                          |
+| `sudo systemctl status pal`    | 查看状态                          |
+| `sudo systemctl enable pal`    | 设置开机启动                      |
+| `sudo systemctl disenable pal` | 关闭开机启动                      |
+| `sudo journalctl -u pal`       | 查看服务日志                      |
+| `sudo journalctl -f`           | 持续输出所有后台服务器日志        |
+
+
+
 ### 配置shell命令提示符
 
 `PS1`代表提示符的变量，可以在shell中输入`echo $PS1`查看当前`PS1`的值
