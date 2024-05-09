@@ -35,8 +35,6 @@ tlb["aa"]
 tlb.aa
 ```
 
-
-
 注：
 
 > 在lua中只有nil表示false，0表示true
@@ -240,5 +238,280 @@ function f(...)
 end
 
 f(0, 1, 2, 3, 4, 5)
+```
+
+
+
+---
+
+#### table表
+
+- 类似于python中的集合
+
+- 索引从1开始
+- *当我们获取 table 的长度的时候无论是使用* `#` 还是` table.getn` 其都会在索引中断的地方停止计数，而导致无法正确取得 table 的长度。如`tbl = {[1] = 2, [2] = 6, [3] = 34, [26] =5}`的长度为3。
+
+表的常用方法：
+
+| 方法                                      | 用途                                          |
+| ----------------------------------------- | --------------------------------------------- |
+| `table.concat(table[,sep[,start[,end]]])` | 将表从start到end以sep分隔符隔开，使用时需注意 |
+| `table.insert(table,[pos,]value)`         | 在pos位置插入元素，pos参数可选，默认尾部插入  |
+| `table.remove(table[,pos])`               | 移除元素，pos参数可选，默认尾部 元素          |
+| `table.sort(table[,comp])`                | 将表升序排序                                  |
+
+>  注意：
+>
+> 在使用`table.concat`方法时，表需要有正确的格式才能正确显示。
+>
+> 错误的格式：
+>
+> ```lua
+> -- 错误格式一：跳序号
+> tlb = {[1] = "aa", [2] = "bb", [3] = "cc", [10] = "dd"}
+> 
+> print(table.concat(tlb, ","))		-- 输出aa,bb,cc
+> 
+> -- 错误格式二：序号为非数字
+> tlb = {[1] = "aa", foo = "bb", [3] = "cc"}
+> 
+> print(table.concat(tlb, ","))		-- 输出aa
+> ```
+
+
+
+---
+
+#### 模块与包
+
+创建一个模块就是创建一个table，将需要导出的常量、函数放入其中
+
+##### 创建模块
+
+```lua
+-- 创建一个module.lua的文件
+module = {}
+module.name = "模块"
+module.version = "1.0.0"
+
+function module.init()
+    print("模块初始化")
+end
+
+local function localfunc()
+    print("私有化函数")
+end
+
+function module.test()
+    print("访问私有化函数")
+    localfunc()
+end
+```
+
+
+
+##### 访问模块
+
+```lua
+-- 创建一个test.lua的文件
+-- 在引用module.lua文件前，需要添加相对路径
+package.path = package.path .. ";module.lua"
+
+require("module.lua")
+
+module.init()
+```
+
+
+
+---
+
+#### Metatable元表
+
+设置元表
+
+```lua
+-- 方法一
+mytable = {}
+mymetatable = {}
+setmetatable(mytable, mymetatable)
+
+-- 方法二
+mytable = setmetatable({}, {})
+```
+
+返回元表
+
+```lua
+getmetatable(mytable)
+```
+
+
+
+##### __index元方法
+
+当你通过键来访问 table 的时候，如果这个键没有值，那么Lua就会寻找该table的metatable（假定有metatable）中的__index 键。如果__index包含一个表格，Lua会在表格中查找相应的键。
+
+```lua
+other = {foo = 3}
+
+tlb = setmetatable({}, {__index = other})
+
+print(tlb.foo)    -- 输出3
+```
+
+__index可以包含一个函数，函数的参数固定为table和键
+
+```lua
+tlb = setmetatable({key1 = "value1"}, {
+    __index = function(t, k)
+    	print("key: " .. k)
+    	return "value"
+end})
+
+-- 先看本身是否拥有该键，如果有直接返回对应值，如果没有再将table和键传入函数中进行下一步运算，最终结果为返回值
+print(tlb.key1)		-- 输出value1
+print(tlb.key2)		-- 输出key: key2
+					--	  value
+```
+
+> 总结：
+>
+> Lua 查找一个表元素时的规则，其实就是如下 3 个步骤:
+>
+> - 1.在表中查找，如果找到，返回该元素，找不到则继续
+> - 2.判断该表是否有元表，如果没有元表，返回 nil，有元表则继续。
+> - 3.判断元表有没有 __index 方法，如果 __index 方法为 nil，则返回 nil；如果 __index 方法是一个表，则重复 1、2、3；如果 __index 方法是一个函数，则返回该函数的返回值。
+
+
+
+##### __newindex元方法
+
+当你给表的一个缺少的索引赋值，解释器就会查找__newindex 元方法：如果存在则调用这个函数而不进行赋值操作。
+
+```lua
+-- 当__newindex=table时
+mymetatable = {key2 = 10}
+mytable = setmetatable({key1 = "value1"}, { __newindex = mymetatable })
+
+print(mytable.key1)							-- 输出value1
+
+-- 本表和元表都没有该键：本表为空，元表成功赋值
+mytable.newkey = "新值"
+print(mytable.newkey,mymetatable.newkey)	-- 输出nil 新值
+
+-- 本表有该键，元表没有：本表成功赋值，元表为空
+mytable.key1 = "新值1"
+print(mytable.key1,mymetatable.key1)		-- 输出新值1 nil
+
+-- 本表没有该键，元表有：本表为空，元表成功赋值
+mytable.key2 = "新值2"
+print(mytable.key2,mymetatable.key2)		-- 输出nil 新值2
+```
+
+```lua
+-- 当__newindex=函数时，将table、键、值代入函数
+mytable = setmetatable({key1 = "value1"}, {
+    __newindex = function(mytable, key, value)
+        rawset(mytable, key, "\""..value.."\"")
+    end
+})
+
+mytable.key1 = "new value"
+mytable.key2 = 4
+
+print(mytable.key1,mytable.key2)			-- 输出new value "4"
+```
+
+> 拓展：
+>
+> `rawset(table, key, value)`方法：在不触发任何元方法的情况下将table[index]设为value（即不受__newindex的影响
+>
+> `rawget(table, index)`方法：同上，在不触发任何元方法的情况下获取table[index]（即不受__index的影响
+>
+> ```lua
+> local tableA = {}
+> local tableB = {NUM = 100}
+> local tableC = {}
+> 
+> setmetatable(tableA, {__index = tableB, __newindex = tableC})
+> print(tableA.NUM)				-- 输出100
+> print(rawget(tableA,"NUM"))		-- 输出nil
+> 
+> tableA.NAME = "AA"
+> print(tableA,NAME)				-- 输出nil
+> print(tableC.NAME)				-- AA
+> 
+> rawset(tableA, "NAME", "I AM AA")
+> print(tableA.NAME)				-- 输出I AM AA
+> ```
+
+
+
+##### 表的操作符
+
+类似于python的魔法方法
+
+| 模式     | 描述              |
+| -------- | ----------------- |
+| __add    | 对应的运算符'+'   |
+| __sub    | 对应的运算符 '-'  |
+| __mul    | 对应的运算符 '*'  |
+| __div    | 对应的运算符 '/'  |
+| __mod    | 对应的运算符 '%'  |
+| __unm    | 对应的运算符 '-'  |
+| __concat | 对应的运算符 '..' |
+| __eq     | 对应的运算符 '==' |
+| __lt     | 对应的运算符 '<'  |
+| __le     | 对应的运算符 '<=' |
+
+> 定义表的相加
+>
+> ```lua
+> -- 计算表中最大值，table.maxn在Lua5.2以上版本中已无法使用
+> -- 自定义计算表中最大键值函数 table_maxn，即返回表最大键值
+> function table_maxn(t)
+>     local mn = 0
+>     for k, v in pairs(t) do
+>         if mn < k then
+>             mn = k
+>         end
+>     end
+>     return mn
+> end
+> 
+> -- 两表相加操作
+> mytable = setmetatable({ 1, 2, 3 }, {
+>   __add = function(mytable, newtable)
+>     for i = 1, table_maxn(newtable) do
+>       table.insert(mytable, table_maxn(mytable)+1,newtable[i])
+>     end
+>     return mytable
+>   end
+> })
+> 
+> secondtable = {4,5,6}
+> 
+> mytable = mytable + secondtable
+>         for k,v in ipairs(mytable) do
+> print(k,v)
+> end
+> ```
+
+##### __tostring元方法
+
+__tostring元方法用于修改表的输出行为
+
+```lua
+mytable = setmetatable({ 10, 20, 30 }, {
+  __tostring = function(mytable)
+    sum = 0
+    for k, v in pairs(mytable) do
+                sum = sum + v
+        end
+    return "表所有元素的和为 " .. sum
+  end
+})
+print(mytable)			-- 输出表所有元素的和为 60
 ```
 
