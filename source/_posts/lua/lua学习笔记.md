@@ -515,3 +515,60 @@ mytable = setmetatable({ 10, 20, 30 }, {
 print(mytable)			-- 输出表所有元素的和为 60
 ```
 
+
+
+---
+
+#### 协程
+
+| 方法                | 描述                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| coroutine.create()  | 创建 coroutine，返回 coroutine， 参数是一个函数，当和 resume 配合使用的时候就唤醒函数调用 |
+| coroutine.resume()  | 重启 coroutine，和 create 配合使用                           |
+| coroutine.yield()   | 挂起 coroutine，将 coroutine 设置为挂起状态，这个和 resume 配合使用能有很多有用的效果 |
+| coroutine.status()  | 查看 coroutine 的状态 注：coroutine 的状态有三种：dead，suspended，running，具体什么时候有这样的状态请参考下面的程序 |
+| coroutine.wrap（）  | 创建 coroutine，返回一个函数，一旦你调用这个函数，就进入 coroutine，和 create 功能重复 |
+| coroutine.running() | 返回正在跑的 coroutine，一个 coroutine 就是一个线程，当使用running的时候，就是返回一个 coroutine 的线程号 |
+
+```lua
+function foo()
+    print("协同程序 foo 开始执行")
+    local value = coroutine.yield("暂停 foo 的执行")
+    print("协同程序 foo 恢复执行，传入的值为: " .. tostring(value))
+    print("协同程序 foo 结束执行")
+end
+
+-- 创建协同程序
+local co = coroutine.create(foo)
+
+-- 启动协同程序（第一次启动协程
+local status, result = coroutine.resume(co)
+print(result) -- 输出: 暂停 foo 的执行
+
+-- 恢复协同程序的执行，并传入一个值（第二次启动协程
+status, result = coroutine.resume(co, 42)
+print(result) -- 输出: 协同程序 foo 恢复执行，传入的值为: 42
+```
+
+以上实例中，我们定义了一个名为 foo 的函数作为协同程序。在函数中，我们使用 coroutine.yield 暂停了协同程序的执行，并返回了一个值
+
+在主程序中，我们使用 coroutine.create 创建了一个协同程序对象，并使用 coroutine.resume 启动了它的执行。
+
+在第一次调用 coroutine.resume 后，协同程序执行到 coroutine.yield 处暂停，并将值返回给主程序。然后，我们再次调用 coroutine.resume，并传入一个值作为协同程序恢复执行时的参数。
+
+执行以上代码输出结果为：
+
+```shell
+协同程序 foo 开始执行
+暂停 foo 的执行
+协同程序 foo 恢复执行，传入的值为: 42
+协同程序 foo 结束执行
+nil
+```
+
+> `local value = coroutine.yield("暂停 foo 的执行")`的作用：
+>
+> - 挂起协程，时协程暂停
+> - 将`"暂停 foo 的执行"`返回给启动这次协程的`coroutine.resume`
+>
+> - 再次启动协程时获取参数赋值给value
