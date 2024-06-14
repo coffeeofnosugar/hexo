@@ -28,3 +28,12 @@ tags:
 
 
 <img class="half" src="/../images/exercise/2024-06-13.jpg"></img>
+
+
+--- 
+
+### 2024年06月14日 运动
+
+
+
+<img class="half" src="/../images/exercise/2024-06-14.jpg"></img>
