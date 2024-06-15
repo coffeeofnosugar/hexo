@@ -39,3 +39,16 @@ tags:
 <img class="half" src="/../images/exercise/2024-06-14.jpg"></img>
 
 <img class="half" src="/../images/exercise/2024-06-14_腹部.jpg"></img>
+
+
+--- 
+
+### 2024年06月15日 运动
+
+
+
+<img class="half" src="/../images/exercise/2024-06-15.jpg"></img>
+
+<img class="half" src="/../images/exercise/2024-06-15_拉伸.jpg"></img>
+
+<img class="half" src="/../images/exercise/2024-06-15_腹部.jpg"></img>
