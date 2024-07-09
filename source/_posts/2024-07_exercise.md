@@ -60,3 +60,16 @@ tags:
 
 <img class="half" src="/../images/exercise/2024-07-05_腹部.jpg"></img>
 
+
+
+--- 
+
+### 2024-07-07 有氧运动 腹部
+
+
+<img class="half" src="/../images/exercise/2024-07-07_有氧运动.jpg"></img>
+
+
+
+<img class="half" src="/../images/exercise/2024-07-07_腹部.jpg"></img>
+
