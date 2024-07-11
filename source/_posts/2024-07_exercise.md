@@ -73,3 +73,51 @@ tags:
 
 <img class="half" src="/../images/exercise/2024-07-07_腹部.jpg"></img>
 
+
+
+--- 
+
+### 2024-07-08 塑性瘦身训练 腹部
+
+
+<img class="half" src="/../images/exercise/2024-07-08_塑性瘦身训练.jpg"></img>
+
+
+
+<img class="half" src="/../images/exercise/2024-07-08_腹部.jpg"></img>
+
+
+
+--- 
+
+### 2024-07-09 腹部 混合有氧
+
+
+<img class="half" src="/../images/exercise/2024-07-09_腹部.jpg"></img>
+
+
+
+<img class="half" src="/../images/exercise/2024-07-09_混合有氧.jpg"></img>
+
+
+
+--- 
+
+### 2024-07-10 腹部
+
+
+<img class="half" src="/../images/exercise/2024-07-10_腹部.jpg"></img>
+
+
+
+--- 
+
+### 2024-07-11 混合有氧 腹部
+
+
+<img class="half" src="/../images/exercise/2024-07-11_混合有氧.jpg"></img>
+
+
+
+<img class="half" src="/../images/exercise/2024-07-11_腹部.jpg"></img>
+

@@ -145,7 +145,7 @@ if __name__ == "__main__":
                     with open(os.path.join(path, fileName), "a", encoding="utf-8") as file:
                         file.write("\n" + content)
                         monthToDate[fileName].append(day)
-                        logging.info(f"在文件 {fileName} 中添加 {day}")
+                        logging.info(f"在文件 {fileName} 中添加 {image.name}")
                 else:
                     logging.debug(f"{image.name} 已存在于 {fileName}")
 
