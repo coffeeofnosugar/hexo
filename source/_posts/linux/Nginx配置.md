@@ -1,6 +1,6 @@
 ---
 title: 【Linux】Nginx配置
-date: 2023-08-21 20:50:06
+date: 2023-08-02 22:01:06
 tags: 
   - Linux
   - Nginx
