@@ -121,3 +121,42 @@ tags:
 
 <img class="half" src="/../images/exercise/2024-07-11_腹部.jpg"></img>
 
+
+
+--- 
+
+### 2024-07-12 腹部 混合有氧
+
+
+<img class="half" src="/../images/exercise/2024-07-12_腹部.jpg"></img>
+
+
+
+<img class="half" src="/../images/exercise/2024-07-12_混合有氧.jpg"></img>
+
+
+
+--- 
+
+### 2024-07-13 腹部 混合有氧
+
+
+<img class="half" src="/../images/exercise/2024-07-13_腹部.jpg"></img>
+
+
+
+<img class="half" src="/../images/exercise/2024-07-13_混合有氧.jpg"></img>
+
+
+
+--- 
+
+### 2024-07-14 腹部 塑性瘦身训练
+
+
+<img class="half" src="/../images/exercise/2024-07-14_腹部.jpg"></img>
+
+
+
+<img class="half" src="/../images/exercise/2024-07-14_塑性瘦身训练.jpg"></img>
+
