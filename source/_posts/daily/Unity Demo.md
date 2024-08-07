@@ -1,6 +1,6 @@
 ---
-title: 项目
-date: 2024-06-10 14:51:31
+title: Unity Demo
+date: 2024-08-05 14:51:31
 tags: 日常
 ---
 
@@ -10,15 +10,25 @@ tags: 日常
 <link rel="stylesheet" href="/../css/images.css">
 
 
-## Unity
 
-### 3DRPG
+### 试玩网站
 
-为了方便观看将[3DRPG](https://www.coffeeofnosugar.top/unitygame/3drpg/)游戏部署到了网站上
+为了方便观看将[3DRPG](https://www.coffeeofnosugar.top/unitygame/3drpg/)游戏部署到了网站上https://www.coffeeofnosugar.top/unitygame/3drpg/
+
 
 由于头发的物理模拟并不支持WebGL，所以头发看起来像塑料一样
 
-#### 行为树编辑器
+### 介绍视频
+
+### 行为树 & 第三人称控制器
+
+{% raw %}
+<div style="position: relative; width: 100%; height: 0; padding-bottom: 75%;">
+<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=112907996171197&bvid=BV1nxaoeNELZ&cid=500001638921677&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" style="position: absolute; width: 100%; height: 100%; Left: 0; top: 0;"></iframe>
+</div>
+{% endraw %}
+
+### 行为树编辑器
 
 使用UI Builder**从零制作**怪物行为树可视化编辑器，通过视图连接各个节点，实现定制化怪物AI。
 
@@ -43,26 +53,22 @@ tags: 日常
 
 
 <div class="container">
-    <img src="/../images/daily/行为树1.png"></img>
-    <img src="/../images/daily/行为树2.png"></img>
+    <img src="/../images/daily/项目/行为树1.png"></img>
+    <img src="/../images/daily/项目/行为树2.png"></img>
 </div>
 
 
 
 ---
 
-#### 第三人称控制
+### 第三人称控制
 
 - `CharacterController`控制玩家移动
 - 有限状态机模式控制玩家状态
 - `Input System`监听玩家输入
 - `Animator`控制玩家动画，下一步计划将舍弃`Animator`转而使用`Playable`播放动画
 
-<video src="/../vidoe/daily/Unity 行为树 第三人称控制 Demo.mp4"></video>
 
 
 
 
-## Python
-
-1. [碧蓝航线半自动挂机脚本](https://gitee.com/coffeeofnosugar/bilanhangxian) 
