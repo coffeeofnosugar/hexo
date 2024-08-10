@@ -18,7 +18,7 @@ C#在8.0后字符串和数组可以像`python`一样使用切片，时代码变�
 
 示例：
 
-<img class="half" src="/../images/unity/CSharp小技巧/HellowWorld.png"></img>
+<img class="half" src="/../images/unity/CSharp小技巧/HelloWorld.png"></img>
 
 ```C#
 var str = @"HelloWorld";
