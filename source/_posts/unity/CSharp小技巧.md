@@ -18,29 +18,23 @@ C#在8.0后字符串和数组可以像`python`一样使用切片，时代码变�
 
 示例：
 
+<img class="half" src="/../images/unity/CSharp小技巧/HellowWorld.png"></img>
+
 ```C#
-string str = "hello world";
+var str = @"HelloWorld";
 
-string subStr = str[0..5]; // "hello"
-string subStr = str[6..]; // "world"
+Console.WriteLine(str[1..5]);			// "ello"
 
-char secondLastChar = str[^2]; // 获取倒数第二个字符 'l'
-string subStr2 = str[6..^1]; // 从索引6到倒数第二个字符，即 "world"
-string subStr = str[^5..^1]; // "worl"
+Console.WriteLine(str[^1]);				// "d"
+Console.WriteLine(str[..^0]);			// "HelloWorld"
+
+Console.WriteLine(str[6..^2]);			// "or"
+Console.WriteLine(str[^5..^1]);			// "Worl"
+Console.WriteLine(str[^7..8]);			// "loWor"
 ```
 
-
-
-这里的`^`和`python`里的`-`一样：反着数，`^1`表示最后一个字符`l`，`^5`表示倒数第五个字符`w`
-
-
-
-第一个参数没什么好说的，不管有没有`^`都是**闭包**
-
-第二个参数就需要注意了
-
-- 没有`^`：正常的索引，如示例一，索引`5`的字符是`空格`，结果里没有`空格`，说明是**开包**
-- 有`^`：反向索引，如最后一个示例，`^5`的字符为`w`，结果里有`w`，说明的**闭包**
+- 这里的`^`和`python`里的`-`一样：反着数，`^1`表示最后一个字符`d`，`^5`表示倒数第五个字符`W`
+- 左闭又开，包含第一个参数，不包含第二个参数
 
 
 
