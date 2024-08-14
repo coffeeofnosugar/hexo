@@ -42,6 +42,8 @@ Console.WriteLine(str[^7..8]);			// "loWor"
 
 ### 简写判断语句
 
+**这里面的所有简写rider都会提示，部分简写不建议使用，大大提高的代码的阅读效率**
+
 #### 一个数介于两个数之间
 
 ```C#
@@ -91,6 +93,16 @@ foreach (var j in list.Where(i => i > 3))		// 提一嘴，里的i和j其实是�
 > 这一样看上面的方法是不是即简洁又好看
 >
 > 但其实这些都是rider编辑器会提示或者直接帮我们转的，只要别说看不懂是什么意思就行了
+
+#### 赋值判断
+
+- `A |= B`：位或，左右两边的值进行位或，并将结果赋值给左边的变量。`bool a |= 1 < 10;` 结果为`True`。<font color="DarkGray">位或：`A |= B`，如果B是true，那么A就是true；否则A的值不变</font>
+- `result = A ?? B`：如果A是null，返回B；否则返回A
+- `result ??= new List<int>()`：如果result是空，就进行复制操作；否则不做任何操作
+
+- `result = A is { age: 20 }`：等价`result = A != null && A.age == 20`
+
+
 
 
 
