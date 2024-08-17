@@ -10,7 +10,7 @@ tags:
 
 1. 在初始化阶段暂停了动画，可以使用`AnimancerComponent.Evaluate()`，将动画立即应用到物体上，否则可能会出现人物还是T-Post状态
 2. 非循环动画在播放完动作后，且后续没有其他动画时，AnimancerState.Time依然在计算，为了避免不必要的性能开销，应该使用`AnimancerPlayable.UnpauseGraph`暂停动画
-3. 当物体被OnDisable的时候，应该将使用`AnimancerPlayable.UnpauseGraph`取消动画的暂停。如果不取消，系统将会再次初始化一遍。`if (_Animancer != null && _Animancer.IsPlayableInitialized) _Ainmancer.Playable.UnpauseGraph();`
+3. 当物体被OnDisable的时候，应该将使用`AnimancerPlayable.UnpauseGraph`取消动画的暂停。如果不取消，再次启用时系统将会再次初始化一遍。`if (_Animancer != null && _Animancer.IsPlayableInitialized) _Ainmancer.Playable.UnpauseGraph();`
 4. 在初始化的时候可以使用`AnimancerComponent.GetOrCreate(ITransition)`来检查`AnimancerState`是否存在
 
 
@@ -198,6 +198,8 @@ public class MotionTransition : ClipTransition
 
 `Float1ControllerTransition`一个`ScriptableObject`类。可以引用指定的`Unity.RuntimeAnimatorController`，还能控制里面`Blend Tree`的单浮点混合树的参数
 
+v8.0版本不一样了，详细参考下文的`Mixer`参数部分。需要注意的是，创建的ScriptableObject的名称需要与`Unity.Animator`中的参数名称一样
+
 ##### 使用方法
 
 创建一个脚本引用`AnimancerComponent`组件和`Float1ControllerTransition`使用`_animancer.Play(Comtroller)`就可以播放里面的`Blend Tree`了。然后改变`Blend Tree`的参数，就可以改变动画状态了
@@ -223,9 +225,9 @@ public sealed class LinearBlendTreeLocomotion : MonoBehaviour
 
 
 
-#### [使用`Mixer State`](https://kybernetik.com.au/animancer/docs/samples/mixers/linear/#mixer)
+#### [使用`Mixer`](https://kybernetik.com.au/animancer/docs/samples/mixers/linear/#mixer)
 
-官方原文：
+官方介绍原文：
 
 [Mixer States](https://kybernetik.com.au/animancer/docs/manual/blending/mixers) are essentially just [Blend Trees](https://docs.unity3d.com/Manual/class-BlendTree.html) which are constructed using code at runtime instead of being configured in the Unity Editor as part of an Animator Controller. Specifically, they *can* be constructed using code and you *can* access their internal details even though in this example we are just using a [Transition](https://kybernetik.com.au/animancer/docs/manual/transitions).
 
@@ -237,27 +239,92 @@ public sealed class LinearBlendTreeLocomotion : MonoBehaviour
 >
 > 与使用`Bled Tree`的方法类似，也需要用到参数控制器。只需将上面代码的`Float1ControllerTransitionAsset.UnShared`替换成`LinearMixerTransitionAsset.UnShared`就可以了
 
+##### 使用方法
+
 v8.0版本：<font color="DarkGray">学着学着官方来了波大的，直接更新了一个大版本</font>
 
 使用`Assets/Create/Animancer/Transition Asset`创建一个[`Transition Assets`](https://kybernetik.com.au/animancer/docs/manual/transitions/assets/)将其改成`LinearMixerTransition`类型，然后添加动画、设置动画参数就可以使用了<font color="DarkGray">v8.0引入了一个新的功能，`String Asset`</font>
 
 `Assets/Create/Animancer/String Asset`创建一个`String Asset`
 
-{% grouppicture 2-2 %}
-
 <img class="half" src="/../images/unity/Animancer学习笔记/movement-speed-parameter.png"></img>
+
+将`MixerTransition`指定这个参数
 
 <img class="half" src="/../images/unity/Animancer学习笔记/mixer-transition.png"></img>
 
+再使用另一个脚本控制这个参数的数值，就能控制角色的混合状态了
+
+```c#
+[SerializeField] private Slider _Slider;
+[SerializeField] private AnimancerComponent _Animancer;
+[SerializeField] private StringAsset _ParameterName;
+
+protected virtual void Awake()
+{
+    _Parameter = _Animancer.Parameters.GetOrCreate<float>(_ParameterName);
+    _Slider.onValueChanged.AddListener(_Parameter.SetValue);// 这里是监听slider来控制数值，实际使用时可以使用输入系统
+}
+```
+
+##### [`Time Synchronization`时间同步](https://kybernetik.com.au/animancer/docs/samples/mixers/linear/#time-synchronization)
+
+{% grouppicture 2-2 %}
+
+<img class="half" src="/../images/unity/Animancer学习笔记/WalkForwards.png"></img>
+
+<img class="half" src="/../images/unity/Animancer学习笔记/RunForwards.png"></img>
+
 {% endgrouppicture %}
 
+从下图可看出walk和run动画帧数差的很多
 
 
 
+<img class="half" src="/../images/unity/Animancer学习笔记/sync-off.gif"></img>
+
+这样会导致，他们相应的姿势没有对齐
 
 
 
+{% note info no-icon %}
 
+动画不正确的话，需要确认的有两件事
+
+1. 需要两个融合的动作是否相似，确保每个动画以相同的姿势开始<font color="DarkGray">这里的示例动画全部设置为在角色左脚接触地面时开始</font>
+2. 选择`Sync`开关启用[时间同步](https://kybernetik.com.au/animancer/docs/manual/blending/mixers/synchronization/)，开启后当`Mixer`混合这些动画的时候就能确保两个动画以相同的速度播放<font color="DarkGray">即使帧率不一致</font>
+
+{% endnote %}
+
+
+
+{% grouppicture 2-2 %}
+
+<img class="half" src="/../images/unity/Animancer学习笔记/walk-inspector.png"></img>
+
+<img class="half" src="/../images/unity/Animancer学习笔记/run-inspector.png"></img>
+
+{% endgrouppicture %}
+
+将run动画的`Cycle Offset`设置为0.5，这样run动画和walk一样在第一帧是左脚接触地面的了
+
+
+
+<img class="half" src="/../images/unity/Animancer学习笔记/sync-setting.png"></img>
+
+勾选walk和run的`Sync`。因为idle对角的影响不大，所以不用勾选；反而如果勾选了，由于idle足足有176帧，会让动画移动的很慢
+
+
+
+<img class="half" src="/../images/unity/Animancer学习笔记/sync-on.gif"></img>
+
+
+
+##### [速度推测](https://kybernetik.com.au/animancer/docs/samples/mixers/linear/#extrapolate-speed)
+
+动画速度参数只设置了从0到1，如果超过1，参数依然按1计算
+
+勾选`ExtrapolateSpeed`之后，`Mixer`能根据速度参数，来加速动画
 
 
 

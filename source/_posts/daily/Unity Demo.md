@@ -13,7 +13,7 @@ tags: 日常
 
 ### 试玩网站
 
-为了方便观看将[3DRPG](https://www.coffeeofnosugar.top/unitygame/3drpg/)游戏部署到了网站上https://www.coffeeofnosugar.top/unitygame/3drpg/
+为了方便观看将[3DRPG](https://www.coffeeofnosugar.top/unitygame/3drpgv3/)游戏部署到了网站上https://www.coffeeofnosugar.top/unitygame/3drpgv3/
 
 
 由于头发的物理模拟并不支持WebGL，所以头发看起来像塑料一样
@@ -22,9 +22,11 @@ tags: 日常
 
 ### 行为树 & 第三人称控制器
 
-{% video https://www.bilibili.com/video/BV1nxaoeNELZ/ %}
-
-
+{% raw %}
+<div style="position: relative; width: 100%; height: 0; padding-bottom: 75%;">
+<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=112907996171197&bvid=BV1nxaoeNELZ&cid=500001638921677&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" style="position: absolute; width: 100%; height: 100%; Left: 0; top: 0;"></iframe>
+</div>
+{% endraw %}
 
 ### 行为树编辑器
 
