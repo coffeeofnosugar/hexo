@@ -8,6 +8,104 @@ tags:
 
 标题虽然是小技巧，但本篇文章里还是记录了一些常用的功能，**本文章的主要目的是方便日后快速查找**
 
+## C#
+
+### 列表
+
+创建一个按照特定规则排列的列表：
+
+例如，实例化一些`Human`，并且将他们按照`age`从大到小的方式放置一个列表中
+
+```c#
+public interface IAnimal
+{
+    public int age { get; set; }
+    public string name { get; set; }
+}
+public class Human : IAnimal
+{
+    public int age { get; set; }
+    public string name { get; set; }
+
+    public Human(int age, string name)
+    {
+        this.age = age;
+        this.name = name;
+    }
+}
+```
+
+定义一个单例泛型类，用来做比较
+
+```C#
+public class ReverseComparer<T> : IComparer<T>
+{
+    public static readonly ReverseComparer<T> Instance = new ReverseComparer<T>();	// 饿汉单例
+    private ReverseComparer() { }				// 私有构造函数，不需要用户创建实例
+    public int Compare(T x, T y) => Comparer<T>.Default.Compare(y, x);	// 实现接口，定义比较方法，注意参数换位置了
+}			// 如果想要从小到大排列，再换回来就好了
+```
+
+```C#
+public class HumanSelector : SortedList<int, IAnimal>		// 继承`SortedList<int, IAnimal>`基类
+{
+   public HumanSelector() : base(ReverseComparer<int>.Instance) {}	// 构造函数，并将参数传递给基类的构造函数
+   public void Add<T>(T man)					// 定义了一个泛型方法
+       where T : IAnimal						// 这个泛型类必须是来自IAnimal接口的
+       => Add(man.age, man);					// 调用了基类的Add方法
+}
+```
+
+使用：
+
+```C#
+Human A = new Human(20, "A");
+Human B = new Human(25, "B");
+Human C = new Human(30, "C");
+HumanSelector humanSelector = new HumanSelector();		// 实例化排序列表
+humanSelector.Add(C);
+humanSelector.Add(A);
+humanSelector.Add(B);
+humanSelector.ToList().ForEach(man => { Console.WriteLine($"{man.Key}, {man.Value.name}"); });
+
+// 30, C
+// 25, B
+// 20, A
+```
+
+这样，我们就将排序封装起来了，使用者只需要使用`Add`将元素添加到排序列表中就OK了
+
+
+
+
+
+
+
+---
+
+### 排版格式
+
+#### `default`
+
+常用`default`能使代码排版更好看，可以省去写判断表达式
+
+值类型
+
+```C#
+int number = defaule;   // 默认值为0
+double amount = default；   // 默认值为0
+bool flag = default;    // 默认值为false
+```
+
+引用类型
+
+```C#
+string text = default;		// 默认值为null
+List<int> numbers = defalut;   // 默认值为null
+```
+
+
+
 
 
 ### 字符串、数组切片
@@ -193,7 +291,29 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 
 
 
+
+
+
+
+## Unity
+
+### 属性
+
+##### 序列化
+
+- `SerializeReference`：使Inspector窗口能序列化接口或抽象类
+
+
+
+
+
+
+
 ---
+
+### 内置方法
+
+- `void OnValidate()`：这个方法会将用户在UnityEditor上的操作实时映射到脚本上
 
 
 

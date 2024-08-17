@@ -22,11 +22,9 @@ tags: 日常
 
 ### 行为树 & 第三人称控制器
 
-{% raw %}
-<div style="position: relative; width: 100%; height: 0; padding-bottom: 75%;">
-<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=112907996171197&bvid=BV1nxaoeNELZ&cid=500001638921677&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" style="position: absolute; width: 100%; height: 100%; Left: 0; top: 0;"></iframe>
-</div>
-{% endraw %}
+{% video https://www.bilibili.com/video/BV1nxaoeNELZ/ %}
+
+
 
 ### 行为树编辑器
 
