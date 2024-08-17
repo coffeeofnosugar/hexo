@@ -6,7 +6,13 @@ tags:
   - Unity动画
 ---
 
- 本章将详细介绍[`StateMachine<TState>`](https://kybernetik.com.au/animancer/docs/manual/fsm/)，官方的轻量免费版也提供了源代码，路径：`Assets/Plugins/Animancer/Utilities/FSM`
+
+
+<img class="half" src="/../images/unity/Animancer学习笔记/State Machine.png"></img>
+
+ 
+
+本章将详细介绍[`StateMachine<TState>`](https://kybernetik.com.au/animancer/docs/manual/fsm/)，官方的轻量免费版也提供了源代码，路径：`Assets/Plugins/Animancer/Utilities/FSM`
 
 该类由`partial`修饰，在四个文件中存在
 
@@ -55,9 +61,9 @@ public StateMachine(TState state)
 
 构造函数，创建一个新的状态机，初始化`_CurrentState`的值，并立即进入这个状态
 
-{% note %}
+{% note info %}
 
-因为后续会频繁的使用`using(new StateChange<TState>()){}`，这里解释一下：就我目前看到的内容，并没有看出`StateChange`有什么用，只是存储了当前的状态，但是并没有看出有什么其他的操作
+因为后续会频繁的使用`using(new StateChange<TState>()){}`，这里解释一下：只有发起改变状态请求的时候才会使用到这个结构体，其他时候`StateChange<TState>()._Current`都是只有起到一个存储状态的作用
 
 (without define class style)
 {% endnote %}
@@ -136,6 +142,10 @@ public void ForceSetState(TState state) {} // 强制转换，无论当前状态�
 
 
 
+
+
+
+
 ---
 
 ### StateMachine1.InputBuffer.cs
@@ -207,12 +217,10 @@ public bool Update(float deltaTime)						 // 尝试进入`state`状态，如果�
         else
         {
             TimeOut -= deltaTime;
-
             if (TimeOut < 0)
                 Clear();
         }
     }
-
     return false;
 }
 ```
@@ -235,7 +243,14 @@ public class InputBuffer : InputBuffer<StateMachine<TState>>
 }
 ```
 
-继承自`InputBuffer<TStateMachine>`，并确定了泛型参数为`StateMachine<TState>`
+继承自`InputBuffer<TStateMachine>`，并确定了泛型参数为`StateMachine<TState>`，这个没好说的，就是指定了状态机
+
+使用方法：
+
+1. 需要在`update()`中调用输入缓冲器的`_InputBuffer.Update()`
+2. 在需要改变状态的时候使用`_InputBuffer.Buffer(_Equip, _InputTimeOut)`
+
+
 
 
 
@@ -251,9 +266,7 @@ public class InputBuffer : InputBuffer<StateMachine<TState>>
 
 这个文件夹中放置的是`StateSelector`， 即状态选择器
 
-该类提供了一种简单的方法来管理潜在状态的优先级列表：
-
-1. 
+该类提供了一种简单的方法来管理潜在状态的优先级列表
 
 #### `ReverseComparer<T>`
 
@@ -296,11 +309,7 @@ public class StateSelector : SortedList<float, TState>				// 继承`SortedList<f
 public virtual void Add(object key, object value);		// 基类SortedList的Add方法
 ```
 
-
-
-
-
-
+实际上在使用的时候可以使用简单的枚举来配分动作的优先级，没必要用这种
 
 
 
@@ -312,7 +321,137 @@ public virtual void Add(object key, object value);		// 基类SortedList的Add方
 
 ### StateMachine1.WithDefault.cs
 
+默认状态机，其实就是添加了一个默认状态，然后针对这个默认状态写了初始化和转换成默认状态方法
 
+就是方便用户手册介绍产品使用的，如果自己使用的话完全可以重新写一个
+
+```C#
+[SerializeField]
+private TState _DefaultState;			// 默认状态
+public TState DefaultState
+{
+    get => _DefaultState;
+    set
+    {
+        _DefaultState = value;
+        if (_CurrentState == null && value != null)
+            ForceSetState(value);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+---
+
+### `StateChange<TState>`结构体
+
+作用：查看状态变化细节的静态访问点
+
+要看懂这个结构体，得先搞清楚以下几点：
+
+1. 他的核心是`_Current`这个线程静态属性，所有其他属性都是围绕他而展开的
+2. 这个结构体的用法：只有在`StateMachine`使用`IState`方法（即正在改变状态）的时候才需要创建这个结构体，结束后就会弃用掉这个临时的结构体（但由于`_Current`是静态的，所以`_Current`是还存在的）
+
+
+
+
+
+```C#
+public struct StateChange<TState> : IDisposable where TState : class, IState
+{
+```
+
+限制类型参数，继承`IDisposable`接口
+
+```C#
+[ThreadStatic]
+private static StateChange<TState> _Current;
+```
+
+当前状态变化，设置成了线程静态，所以每个线程都有自己的副本，使得整个系统是线程安全的
+
+> 线程静态成员特点：
+>
+> 1. 多个线程访问并改变_Current的值时，每个线程看到的是它自己的 _Current 副本，因此一个线程对 _Current 的修改不会影响其他线程。
+> 2. 每个线程在其生命周期内对 _Current 的任何修改只对其自身有效。当线程执行完毕后，该线程的 _Current 副本就会被销毁。
+> 3. 当所有线程都执行完毕后，_Current 的最终值取决于最后一个修改它的线程的状态，或者如果没有任何线程正在进行状态更改，_Current 将保持其默认值（通常是 null 或者初始状态）。
+
+```C#
+private StateMachine<TState> _StateMachine;		// 当前发生状态变化的状态机实例
+private TState _PreviousState;					// 正在被改变出去的状态
+private TState _NextState;						// 正在进入的状态
+```
+
+```C#
+public static bool IsActive => _Current._StateMachine != null;					// 是否正在发生变化
+public static StateMachine<TState> StateMachine => _Current._StateMachine;		// 设置上面字段的访问器
+public static TState PreviousState => _Current._PreviousState;
+public static TState NextState => _Current._NextState;
+```
+
+{% note info %}
+
+这里可以看到只提供了`PreviousState`和`NextState`两个状态供外界访问，外界没有访问`_Current`的方法，因为没有必要。
+
+通过在`CanExitState`的打印这三个可以看出，`_Current`就是`PreviousState`。如`Idle`->`Jump`：
+
+1. 在按下空格的一瞬间：`PreviousState`是`Idle`，`NextState`是`Jump`；
+
+2. 起跳后系统每帧都在判断是否能从`Jump`->`Idle`，这段期间`PreviousState`一直是`Jump`，`NextState`一直是`Idle`；
+
+3. 如果在空中的时候又按了一下空格键，系统会判断能否`Jump`->`Jump`，在你按下的这一帧`PreviousState`和`NextState`都是`Jump`
+
+可以看出来这里的状态是相对于帧的状态，并不是指上一个状态块
+
+<img class="half" src="/../images/unity/Animancer学习笔记/StateChange.png"></img>
+
+<img class="half" src="/../images/unity/Animancer学习笔记/StateChange1.png"></img>
+
+(without define class style)
+{% endnote %}
+
+```C#
+internal StateChange(StateMachine<TState> stateMachine, TState previousState, TState nextState)
+{
+    this = _Current;
+
+    _Current._StateMachine = stateMachine;
+    _Current._PreviousState = previousState;
+    _Current._NextState = nextState;
+}
+```
+
+`internal`，只允许在`Animancer.FSM`内访问
+
+构造函数用于设置当前状态变化的信息。它首先复制当前的`StateChange<TState>`到this，然后更新_Current以反映新的状态变化。
+
+```C#
+public void Dispose()
+{
+    _Current = this;
+}
+```
+
+实现`IDisposable`接口，在`StateMachine<TState>`会常使用`using`来创建结构体，在`using`结束时将自己再存储在线程静态中。
+
+<font color="DarkGray">其实整个的作用就是为了保证有且只有一个静态`_Current`并且其状态是最新的</font>
+
+```C#
+using (new StateChange<TState>(this, null, state))
+{
+    _CurrentState = state;
+    state.OnEnterState();
+}
+```
+
+> 拓展：`IDsposable`的作用：`using `块结束或其中的代码抛出异常 ，`Dispose` 方法将被自动调用
 
 
 
@@ -376,77 +515,11 @@ public interface IPrioritizable : IState
 
 ---
 
-### `StateChange<TState>`结构体
+### 总结：
 
-作用：查看状态变化细节的静态访问点
+​		第一次研究源码，开始的时候确实会被吓着，觉得有点困难什么的。但实际看完下来发现和之前学的状态机核心工作原理是差不多的，只是在这基础上完善了很多方法，如：设定进入、离开状态的方法；使用接口规范代码。看完之后发现其实理解的还是很通透的。
 
-要看懂这个结构体，得先搞清楚一个概念：他的核心是`_Current`这个线程静态，所有的属性都是围绕他而展开的
+​		这次的奇妙之旅最大的搜获可能就是理解了一个完整的项目应该是怎么样的框架结构。要尽可能的使用接口和继承，达到解耦的效果，使代码更容易维护。
 
-```C#
-public struct StateChange<TState> : IDisposable where TState : class, IState
-{
-```
+​		学习的路还很长，这次状态机的源码并不是`Animancer`的核心源码，只是其中的一个小部分而言，而且有限状态机也不是很难的一个模型。后续还需要继续研究源码，了解更多的编程技巧、模型框架。
 
-限制类型参数，继承`IDisposable`接口
-
-```C#
-[ThreadStatic]
-private static StateChange<TState> _Current;
-```
-
-当前状态变化，设置成了线程静态，所以每个线程都有自己的副本，使得整个系统是线程安全的
-
-> 线程静态成员特点：
->
-> 1. 多个线程访问并改变_Current的值时，每个线程看到的是它自己的 _Current 副本，因此一个线程对 _Current 的修改不会影响其他线程。
-> 2. 每个线程在其生命周期内对 _Current 的任何修改只对其自身有效。当线程执行完毕后，该线程的 _Current 副本就会被销毁。
-> 3. 当所有线程都执行完毕后，_Current 的最终值取决于最后一个修改它的线程的状态，或者如果没有任何线程正在进行状态更改，_Current 将保持其默认值（通常是 null 或者初始状态）。
-
-```C#
-private StateMachine<TState> _StateMachine;		// 当前发生状态变化的状态机实例
-private TState _PreviousState;					// 正在被改变出去的状态
-private TState _NextState;						// 正在进入的状态
-```
-
-```C#
-public static bool IsActive => _Current._StateMachine != null;					// 是否正在发生变化
-public static StateMachine<TState> StateMachine => _Current._StateMachine;		// 设置上面字段的访问器
-public static TState PreviousState => _Current._PreviousState;
-public static TState NextState => _Current._NextState;
-```
-
-```C#
-internal StateChange(StateMachine<TState> stateMachine, TState previousState, TState nextState)
-{
-    this = _Current;
-
-    _Current._StateMachine = stateMachine;
-    _Current._PreviousState = previousState;
-    _Current._NextState = nextState;
-}
-```
-
-`internal`，只允许在`Animancer.FSM`内访问
-
-构造函数用于设置当前状态变化的信息。它首先复制当前的`StateChange<TState>`到this，然后更新_Current以反映新的状态变化。
-
-```C#
-public void Dispose()
-{
-    _Current = this;
-}
-```
-
-实现`IDisposable`接口，在`StateMachine<TState>`会常使用`using`来创建结构体，在`using`结束时将自己再存储在线程静态中。
-
-<font color="DarkGray">其实整个的作用就是为了保证有且只有一个静态`_Current`并且其状态是最新的</font>
-
-```C#
-using (new StateChange<TState>(this, null, state))
-{
-    _CurrentState = state;
-    state.OnEnterState();
-}
-```
-
-> 拓展：`IDsposable`的作用：`using `块结束或其中的代码抛出异常 ，`Dispose` 方法将被自动调用

@@ -17,8 +17,6 @@ tags:
 
 
 
-
-
 ### 基础内容
 
 #### Clip动画片段
@@ -287,7 +285,7 @@ protected virtual void Awake()
 
 
 
-{% note info no-icon %}
+{% note danger %}
 
 动画不正确的话，需要确认的有两件事
 
@@ -315,6 +313,8 @@ protected virtual void Awake()
 勾选walk和run的`Sync`。因为idle对角的影响不大，所以不用勾选；反而如果勾选了，由于idle足足有176帧，会让动画移动的很慢
 
 
+
+最终效果：
 
 <img class="half" src="/../images/unity/Animancer学习笔记/sync-on.gif"></img>
 
@@ -367,3 +367,9 @@ protected virtual void Awake()
 - `DegreesPerSecond`：`°/s`，旋转角度，度每秒
 - `MetersPerSecond`：`m/s`，移动速度，米每秒
 - `Multiplier`：`x`，倍率
+
+
+
+---
+
+[`Animancer`官方网站](https://kybernetik.com.au/animancer/)

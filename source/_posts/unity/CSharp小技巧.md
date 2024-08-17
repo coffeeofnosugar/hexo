@@ -10,7 +10,10 @@ tags:
 
 ## C#
 
+{% note %}
 ### 列表
+(without define class style)
+{% endnote %}
 
 创建一个按照特定规则排列的列表：
 
@@ -81,9 +84,91 @@ humanSelector.ToList().ForEach(man => { Console.WriteLine($"{man.Key}, {man.Valu
 
 
 
+
+
 ---
 
-### 排版格式
+{% note %}
+
+### 字段与属性
+
+(without define class style)
+{% endnote %}
+
+#### 索引器
+
+总得来说大致有三种用法
+
+1. 最普通的，针对字段复制了一个属性供外界使用，每次访问都会创建一个值类型的副本。
+
+```C#
+private int _count;							// 字段：内部使用
+public int Count							// 属性：外部可读可写
+{
+    get => _count;
+    set => _count = value / 2;				// 可自定义读写需求
+}
+```
+
+```c#
+private int _length;
+public int Length => _length;					// 属性：公共只读
+```
+
+```C#
+public static int TotalCount { get; set; }		// 属性：可读可写，这种方式实际上也隐式的创建了一个字段，如下图
+```
+
+<img class="half" src="/../images/unity/CSharp小技巧/属性和字段.png"></img>
+
+
+
+2. 使用了`ref`修饰，使`Run`实际上是直接访问的`_run`这个字段，减少了一个复制的过程，提高性能
+
+```c#
+[SerializeField]
+private bool _run;							// 内部使用
+public ref bool Run => ref _run;		// 外部使用，这里实际上是直接访问的_run这个字段
+```
+
+
+
+3. 可以让类像列表一样访问
+
+```c#
+public string this[int index]
+{
+    get => _items[index];
+    set => _items[index] = value;
+}
+```
+
+甚至还可以将字典改成与python一样的用法：<font color="DarkGray">不过不推荐这种用法</font>
+
+```C#
+public class CustomizeDict
+{
+    private Dictionary<string, string> _data = new Dictionary<string, string>();
+    public object this[string key]
+    {
+        get => _data[key];
+        set
+        {
+            if (_data.ContainsKey(key))
+                _data[key] = value.ToString();
+            else
+                _data.Add(key, value.ToString());
+            UpdateContent();
+        }
+    }
+}
+
+CustomizeDict["speed"] = 500;
+```
+
+
+
+
 
 #### `default`
 
@@ -108,7 +193,20 @@ List<int> numbers = defalut;   // 默认值为null
 
 
 
+
+
+
+
+
+
+---
+
+{% note %}
+
 ### 字符串、数组切片
+
+(without define class style)
+{% endnote %}
 
 C#在8.0后字符串和数组可以像`python`一样使用切片，时代码变的即简单又美观
 
@@ -136,9 +234,20 @@ Console.WriteLine(str[^7..8]);			// "loWor"
 
 
 
+
+
+
+
+
+
 ---
 
+{% note %}
+
 ### 简写判断语句
+
+(without define class style)
+{% endnote %}
 
 **这里面的所有简写rider都会提示，部分简写不建议使用，大大提高的代码的阅读效率**
 
@@ -207,9 +316,18 @@ foreach (var j in list.Where(i => i > 3))		// 提一嘴，里的i和j其实是�
 
 
 
+
+
+
+
 ---
 
+{% note %}
+
 ### 格式化字符串
+
+(without define class style)
+{% endnote %}
 
 #### 用法
 
@@ -297,11 +415,16 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 
 ## Unity
 
+{% note %}
+
 ### 属性
+
+(without define class style)
+{% endnote %}
 
 ##### 序列化
 
-- `SerializeReference`：使Inspector窗口能序列化接口或抽象类
+- `SerializeReference`：使Inspector窗口能序列化接口或抽象类，序列化的时候就已经实例化了，可以不需要使用`new()`实例化
 
 
 
@@ -311,7 +434,12 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 
 ---
 
+{% note %}
+
 ### 内置方法
+
+(without define class style)
+{% endnote %}
 
 - `void OnValidate()`：这个方法会将用户在UnityEditor上的操作实时映射到脚本上
 
