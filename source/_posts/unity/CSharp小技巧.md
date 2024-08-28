@@ -1,6 +1,7 @@
 ---
 title: 【Unity】【C#】CSharp小技巧
 date: 2024-08-11 05:28:06
+updated: 2024-08-28 11:27:38
 tags:
   - Unity
   - CSharp
@@ -10,9 +11,90 @@ tags:
 
 ## C#
 
-{% note %}
+{% note default %}
+
+### 访问权限
+
+{% endnote %}
+
+#### 私有化构造函数
+
+单例类，是不需要外界实例化的，可以将构造函数私有化，外界就无法实例化了。
+
+```C#
+class Manager
+{
+    public static Manager Instance = new Manager();		// 单例类
+    private Manager() { }								// 私有化构造函数
+}
+```
+
+#### 接口封装
+
+不希望外界访问这个接口里所有的方法时，可以显示实现接口
+
+```c#
+public interface IInterface
+{
+    void Add();
+    void Remove();
+    int Get();
+}
+```
+
+```c#
+class ReadOnlyClass : IInterface						// 创建一个只能读取，不能更改内容的类
+{
+    void IInterface.Add()													// 显示接口实现，外界无法访问
+    {
+        throw new NotSupportedException("Readonly Not Supported Add");		// 就算访问了，也会抛异常
+    }
+
+    void IInterface.Remove()												// 显示接口实现，外界无法访问
+    {
+        throw new NotSupportedException("Readonly Not Supported Remove");	// 就算访问了，也会抛异常
+    }
+
+    public int Get()					// 正常访问Get()方法
+    {
+        return 1;
+    }
+}
+```
+`ReadOnlyDictionary<TKey, TValue>()`、`ReadOnlyList<>`、`ReadOnlyCollection<>`、`ReadOnlySet<>`都是使用显示实现接口的方法隐藏了修改的方法，使外界只能读取，不能修改
+
+完整使用方法：
+
+ ```C#
+ class Manager
+ {
+     private Dictionary<string, string> _uiStack;
+     public ReadOnlyDictionary<string, string> UIStack { get; }		// 注意这里没有使用set，完全杜绝了修改的可能
+     public Manager()
+     {
+         UIStack = new ReadOnlyDictionary<string, string>(_uiStack);
+     }
+ }
+ ```
+
+> 拓展：
+>
+> `{ get; private set; }`：在类内部还能重新setter
+>
+> `{ get; }`：只能在构造函数中setter
+
+
+
+
+
+
+
+---
+
+{% note default %}
+
 ### 列表
-(without define class style)
+
 {% endnote %}
 
 创建一个按照特定规则排列的列表：
@@ -92,8 +174,7 @@ humanSelector.ToList().ForEach(man => { Console.WriteLine($"{man.Key}, {man.Valu
 
 ### 字段与属性
 
-(without define class style)
-{% endnote %}
+{% endnote default %}
 
 #### 索引器
 
@@ -201,11 +282,11 @@ List<int> numbers = defalut;   // 默认值为null
 
 ---
 
-{% note %}
+{% note default %}
 
 ### 字符串、数组切片
 
-(without define class style)
+
 {% endnote %}
 
 C#在8.0后字符串和数组可以像`python`一样使用切片，时代码变的即简单又美观
@@ -242,11 +323,10 @@ Console.WriteLine(str[^7..8]);			// "loWor"
 
 ---
 
-{% note %}
+{% note default %}
 
 ### 简写判断语句
 
-(without define class style)
 {% endnote %}
 
 **这里面的所有简写rider都会提示，部分简写不建议使用，大大提高的代码的阅读效率**
@@ -322,11 +402,11 @@ foreach (var j in list.Where(i => i > 3))		// 提一嘴，里的i和j其实是�
 
 ---
 
-{% note %}
+{% note default %}
 
 ### 格式化字符串
 
-(without define class style)
+
 {% endnote %}
 
 #### 用法
@@ -415,11 +495,11 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 
 ## Unity
 
-{% note %}
+{% note default %}
 
 ### 属性
 
-(without define class style)
+
 {% endnote %}
 
 ##### 序列化
@@ -434,11 +514,11 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 
 ---
 
-{% note %}
+{% note default %}
 
 ### 内置方法
 
-(without define class style)
+
 {% endnote %}
 
 - `void OnValidate()`：这个方法会将用户在UnityEditor上的操作实时映射到脚本上

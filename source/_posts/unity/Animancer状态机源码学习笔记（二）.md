@@ -64,8 +64,6 @@ public StateMachine(TState state)
 {% note info %}
 
 因为后续会频繁的使用`using(new StateChange<TState>()){}`，这里解释一下：只有发起改变状态请求的时候才会使用到这个结构体，其他时候`StateChange<TState>()._Current`都是只有起到一个存储状态的作用
-
-(without define class style)
 {% endnote %}
 
 ```C#
@@ -413,8 +411,6 @@ public static TState NextState => _Current._NextState;
 <img class="half" src="/../images/unity/Animancer学习笔记/StateChange.png"></img>
 
 <img class="half" src="/../images/unity/Animancer学习笔记/StateChange1.png"></img>
-
-(without define class style)
 {% endnote %}
 
 ```C#
@@ -521,5 +517,5 @@ public interface IPrioritizable : IState
 
 ​		这次的奇妙之旅最大的搜获可能就是理解了一个完整的项目应该是怎么样的框架结构。要尽可能的使用接口和继承，达到解耦的效果，使代码更容易维护。
 
-​		学习的路还很长，这次状态机的源码并不是`Animancer`的核心源码，只是其中的一个小部分而言，而且有限状态机也不是很难的一个模型。后续还需要继续研究源码，了解更多的编程技巧、模型框架。
+​		学习的路还很长，这次状态机的源码并不是`Animancer`的核心源码，只是其中的一个小部分而已，并且有限状态机也并不是很难的一个模型。后续还需要继续研究源码，了解更多的编程技巧和模型框架。
 

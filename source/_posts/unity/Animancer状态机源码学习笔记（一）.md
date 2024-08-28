@@ -116,8 +116,6 @@ public virtual void OnExitState()
 {% note %}
 
 除了关闭开启脚本外，该脚本还实现了接口的`CanEnterState`和`CanExitState`属性，默认永远都是`true`，后续有需求可自定义
-
-(without define class style)
 {% endnote %}
 
 ```
@@ -354,7 +352,8 @@ public enum CharacterStatePriority		// 动画优先级
 
 - 最让人眼前一亮的还是通过控制脚本组件的启用来完成进入和退出状态的操作，不仅使逻辑代码融入了`UnityBehaviour`生命周期，还能让开发者直观的看到每个状态的当前情况。<font color="DarkGray">有想过如果使用组件开关来实现状态机的进出，会不会影响性能问题。但是不管怎样，每个状态类都需要引用`Clip`你不得不序列化这个状态类</font>
 - 之前并没有使用接口和父类继承，代码框架不够规范，做了很多重复的工作。每个状态之间太过独立，状态与状态之间的转换变得十分麻烦。如果想要扩展其他状态的话，几乎每个状态都得针对新的状态做出改变，可扩展性不强
-- 有三种方式切换状态：`TrySetState`、`TryResetState`、`ForceSetState`，与`CanEnterState`和`CanExitState`配合能使动作之间的转变更加灵活。<font color="DarkGray">之前只有类似`ForceSetState`这一种方式</font>
+- 引用了一个新的`Brain`脚本，用来控制每个状态之间的转换，而不是在状态内部控制跳到哪一个状态。每个状态内部只用管理自己是否能进入和退出，不用管什么时候进入。
+- 有三种方式切换状态：`TrySetState`、`TryResetState`、`ForceSetState`，与`CanEnterState`和`CanExitState`配合能使动作之间的转变更加灵活。<font color="DarkGray">之前写的状态机只有类似`ForceSetState`这一种方式</font>
 
 
 
