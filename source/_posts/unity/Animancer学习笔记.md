@@ -12,6 +12,7 @@ tags:
 2. 非循环动画在播放完动作后，且后续没有其他动画时，AnimancerState.Time依然在计算，为了避免不必要的性能开销，应该使用`AnimancerPlayable.UnpauseGraph`暂停动画
 3. 当物体被OnDisable的时候，应该将使用`AnimancerPlayable.UnpauseGraph`取消动画的暂停。如果不取消，再次启用时系统将会再次初始化一遍。`if (_Animancer != null && _Animancer.IsPlayableInitialized) _Ainmancer.Playable.UnpauseGraph();`
 4. 在初始化的时候可以使用`AnimancerComponent.GetOrCreate(ITransition)`来检查`AnimancerState`是否存在
+5. 万向走（单方向）使用`2D Freeform Directional`以节约算力，四向走（多方向）使用`2D Freeform Directional`以达到更好表现
 
 
 
