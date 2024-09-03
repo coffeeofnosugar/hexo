@@ -70,11 +70,9 @@ tags:
 
 首先是`VolumenComponent`，继承这个类之后就能在`Volume`组件上`AddOverride`。
 
-{% grouppicture 3-3 %}
+{% grouppicture 2-2 %}
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/VolumeComponent-1.png"></img>
-
-<img class="half" src="/../images/common/CoreUtils/箭头右.png"></img>
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/VolumeComponent-2.png"></img>
 
@@ -292,7 +290,7 @@ Shader "Unlit/Chapter12-BrightnessSaturationAndContrast"
 2. 然后添加我们自定义的渲染规则（名称就是`RenderPassFeature`的类名）
 3. 添加shader
 
-{% grouppicture 3-3 %}
+
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/URP设置-1.png"></img>
 
@@ -300,18 +298,18 @@ Shader "Unlit/Chapter12-BrightnessSaturationAndContrast"
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/URP设置-3.png"></img>
 
-{% endgrouppicture %}
+
 
 4. 添加Volume组件，并创建一个预设
 5. 按照`VolumeComponent`添加volume
 
-{% grouppicture 3-3 %}
+
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/URP设置-4.png"></img>
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/URP设置-5.png"></img>
 
-{% endgrouppicture %}
+
 
 
 
