@@ -285,7 +285,7 @@ out = 1 - input，对与UV坐标和遮罩很有用，可以将Texture纹理变�
 
 {% grouppicture 2-2 %}
 
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Scale-3.gif"></img>
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Scale-3.png"></img>
 
 <img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Scale-4.png"></img>
 

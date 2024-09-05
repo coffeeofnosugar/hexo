@@ -170,11 +170,11 @@ humanSelector.ToList().ForEach(man => { Console.WriteLine($"{man.Key}, {man.Valu
 
 ---
 
-{% note %}
+{% note default %}
 
 ### 字段与属性
 
-{% endnote default %}
+{% endnote %}
 
 #### 索引器
 
