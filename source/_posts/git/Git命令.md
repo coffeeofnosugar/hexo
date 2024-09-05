@@ -113,6 +113,8 @@ git merge FETCH_HEAD
 
 在本地创建一个`<new_local_branch>`分支并将`<origin/remote_banch_name>`
 
+一般要使用这个命令是因为遇到了冲突，详细处理方法可以查看另一篇文章[【Git】合并分支及如何解决冲突](https://www.coffeeofnosugar.top/2023/09/15/git-Git%E5%90%88%E5%B9%B6%E5%88%86%E6%94%AF%E5%8F%8A%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E5%86%B2%E7%AA%81/)
+
 
 
 ---
