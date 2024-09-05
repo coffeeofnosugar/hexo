@@ -187,9 +187,7 @@ git ls-files -z | xargs -0 du -hc | grep total$
 
 ---
 
-### 其他
-
-#### 记住账号密码
+### 记住账号密码
 
 在linxu中每次都要输入账号密码，使用此命令后，push的时候再输入一次密码就不用再输入了
 
@@ -197,13 +195,149 @@ git ls-files -z | xargs -0 du -hc | grep total$
 git config --global credential.helper store
 ```
 
-#### 中文为ASCII码
+
+
+---
+
+### 中文为ASCII码
 
 默认情况下git中文显示为ASCII码，使用该命令之后能正常显示中文
 
 ```shell
 git config --global core.quotepath false
 ```
+
+
+
+---
+
+### CRLF will be replaced by LF the next time Git touches it
+
+这个警告提示的意思是，Git 在下次处理文件（例如提交或检出）时，会将文件中的换行符从 CRLF转换为 LF
+
+#### 背景
+
+Git 对不同操作系统的换行符处理有不同的默认设置。通常，Git 会尝试在不同操作系统之间处理换行符的差异。例如：
+
+- **Windows** 使用 CRLF 作为换行符。
+- **Unix/Linux/macOS** 使用 LF 作为换行符。
+
+#### 解决方案
+
+1. **保持默认行为**： 如果你不介意这种转换行为，可以忽略这个警告。Git 会在提交时自动处理换行符。
+
+2. **设置 Git 配置**： 你可以通过全局 Git 配置或者设置 `.gitattributes` 文件来控制换行符的处理方式。
+
+**全局Git配置**：在`git shell`上执行<font color="DarkGray">（使用了这个就不用配置`.gitattributes`文件了）</font>
+
+```bash
+git config --global core.autocrlf true  # Windows 用户推荐
+```
+
+**配置 `.gitattributes` 文件**: 在仓库根目录下创建或编辑 `.gitattributes` 文件，添加以下规则来强制 Git 使用一致的换行符：<font color="DarkGray">（这个配置会覆盖全局设置）</font>
+
+```gitattributes
+# 强制所有文本文件使用 CRLF 作为换行符
+* text=auto eol=crlf
+```
+
+
+3. **手动转换换行符**: 如果你需要手动处理换行符，可以使用文本编辑器或命令行工具来转换文件的换行符。
+
+```bash
+sed -i 's/\r$//' path/to/file.text
+```
+
+
+
+#### 补救措施
+
+如果之前已经提交过文件了，可以按照以下步骤重新设置文件的换行符
+
+1. 配置`.gitattributes`文件
+
+   ```gitattributes
+   # 强制所有文本文件使用 LF 作为换行符
+   * text=auto eol=crlf
+   ```
+
+2. 删除Git缓存文件
+
+   ```bash
+   git rm --cached -r .
+   ```
+
+   这个命令会将所有已跟踪的文件从 Git 的暂存区中移除，但不会删除工作目录中的文件。此时，Git 会认为这些文件已被删除。
+
+3. 重新添加所有文件到暂存区并提交更改
+
+   ```bash
+   git add .		# 此时可能依然还会报警告，但是不要紧。我们只要存储一次，修改文件在git中的规则之后，下次就不会有这个警告了
+   git commit -m "Normalize line endings using CRLF"
+   ```
+
+   此时，Git 会根据 `.gitattributes` 文件中指定的换行符规则重新处理这些文件，并将它们添加回暂存区。
+
+4. 验证更改
+
+   ```bash
+   git ls-files --eol
+   ```
+
+   如果输出的内容是，以下内容就没问题
+
+   ```bash
+   i/lf    w/crlf  attr/text=auto eol=crlf .gitattributes
+   i/lf    w/crlf  attr/text=auto eol=crlf tset.text
+   ```
+
+   - `i/lf`：当前工作副本中的换行符类型<font color="DarkGray">因为使用的是git bash，是Unix，所以工作副本里是lf</font>
+   - `w/crlf`： Git 将在下次检出（checkout）或其他操作时将会使用的换行符类型
+   - `attr/text=auto eol=crlf`：这是 `.gitattributes` 文件中的设置
+
+   也可以将文件使用`NotePad++`或`rider`等编辑器打开，查看右下角的编码格式
+
+#### 完全消除警告
+
+经过测试发现，在创建Unity的C#脚本的时候`.cs`文件默认是`crlf`，`.meta`文件使用的`lf`。
+
+所以只要你启用了Git全局配置的自动转换，或则在`.gitattributes`中指定了规则，你都无法完全避免这个警告。
+
+**唯一能完全取消这个警告的方法是：不再规范所有文件的换行规则**
+
+具体的做法就是：
+
+1. `git config --global core.autocrlf false`：取消自动转换
+2. 在`.gitattributes`注释掉换行规则
+
+这样才能完全让这个警告消失在你的视野中
+
+但正如“有得便有失”，你眼睛不会被脏了，但是代价是什么呢？
+
+> <font color="red">注意：</font>
+>
+> 不再规范所有文件的换行规则后
+>
+> - 跨平台使用仓库，会影响文件的内容，从而影响版本控制和合并
+> - 多人员开发时，没有规范换行规则也会影响文件内容，从而影响版本控制
+>
+> **所以只有在个人独自开发，且没有多平台需求的开发项目才能完全避免这个警告。**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

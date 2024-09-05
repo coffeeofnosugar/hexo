@@ -70,11 +70,9 @@ tags:
 
 首先是`VolumenComponent`，继承这个类之后就能在`Volume`组件上`AddOverride`。
 
-{% grouppicture 3-3 %}
+{% grouppicture 2-2 %}
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/VolumeComponent-1.png"></img>
-
-<img class="half" src="/../images/common/CoreUtils/箭头右.png"></img>
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/VolumeComponent-2.png"></img>
 
@@ -292,7 +290,7 @@ Shader "Unlit/Chapter12-BrightnessSaturationAndContrast"
 2. 然后添加我们自定义的渲染规则（名称就是`RenderPassFeature`的类名）
 3. 添加shader
 
-{% grouppicture 3-3 %}
+
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/URP设置-1.png"></img>
 
@@ -300,18 +298,18 @@ Shader "Unlit/Chapter12-BrightnessSaturationAndContrast"
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/URP设置-3.png"></img>
 
-{% endgrouppicture %}
+
 
 4. 添加Volume组件，并创建一个预设
 5. 按照`VolumeComponent`添加volume
 
-{% grouppicture 3-3 %}
+
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/URP设置-4.png"></img>
 
 <img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/URP设置-5.png"></img>
 
-{% endgrouppicture %}
+
 
 
 
@@ -326,4 +324,26 @@ Shader "Unlit/Chapter12-BrightnessSaturationAndContrast"
 ```C#
 Assets\Volume\Scripts\SourceCode1\DingRenderPassFeature.cs(11,17): warning CS0618: 'RenderTargetHandle' is obsolete: 'Deprecated in favor of RTHandle'
 ```
+
+
+
+
+
+---
+
+### 后记：
+
+突然记起来，之前在unity官方教程中学习过后处理的一点方法，如果只是简单的想要将Shader应用到场景中的物体上，可以按照[Shader Graph 遮挡剔除](https://learn.u3d.cn/tutorial/3drpg-core?chapterId=63562b29edca72001f21d19d#5fdb3f8a5a9d57002292df9b)的方法不使用代码直接将Shader应用到物体上。
+
+具体做法：
+
+在URP_Asset_Renderer上添加`Render Objects(Experimental)`，然后设置相应的名称、渲染时机、应用到物体的Layer、需要使用的材质。其他的具体设置可以点击上方的帮助查看官方文档
+
+<img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/后记.png"></img>
+
+
+
+
+
+
 

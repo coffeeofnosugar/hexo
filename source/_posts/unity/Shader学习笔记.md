@@ -55,7 +55,33 @@ tags:
 
 
 
+---
 
+### 显隐/透明
+
+#### 显隐
+
+该状态为默认状态。只有两个选择要么显示，要么隐藏。
+
+- Alpha(float)：与阈值比较，控制物体显隐
+- Alpha Clip Threshold(float)：显影阈值，Alpha大于这个数就显示，Alpha小于这个数就隐藏
+
+除了需要设置Alpha外，还需要设置阈值。阈值没有默认值，如果不设置阈值，就无法控制显隐。
+
+<img class="half" src="/../images/unity/Shader学习笔记/显隐.gif"></img>
+
+
+
+#### 透明
+
+需要将`Surface`设置为`Transparent`
+
+- Alpha(float)：范围为[0, 1]，从0完全透明，到1完全显示。<font color="DarkGray">如果设置了阈值需单独与阈值比较，比较方式与显隐一样</font>
+- Alpha Clip Threshold(float)：显影阈值，Alpha大于这个数就显示，Alpha小于这个数就隐藏
+
+只需要设置Alpha。如果设置了阈值，则还需与阈值相比较，控制显隐。
+
+<img class="half" src="/../images/unity/Shader学习笔记/透明.gif"></img>
 
 
 
@@ -83,7 +109,9 @@ UV坐标是用于映射2D纹理到3D模型的坐标。在3D模型上的每个顶
 
 运算本身并不难，难的是需要将运算与图形相结合，并且不要把关键性的几个概念搞混
 
-#### --------------数学运算符-------------
+#### ========数学运算符========
+
+#### ------加乘减除------
 
 #### [`Add`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Add)(相加)：叠加两个纹理
 
@@ -103,9 +131,11 @@ UV坐标是用于映射2D纹理到3D模型的坐标。在3D模型上的每个顶
 
 <img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Multiply-1.gif"></img>
 
-- 纹理乘法：通常是纹理和遮罩相乘，以裁剪图片
+- 纹理乘法：与遮罩相乘可以裁剪图片；与颜色相乘可以叠加颜色
 
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Multiply-2.gif"></img>
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Multiply-2.png"></img>
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Multiply-3.png"></img>
 
 > NOTE：单数值乘法可交换位置，但是**矩阵乘法不可交换位置**
 
@@ -155,15 +185,45 @@ UV坐标是用于映射2D纹理到3D模型的坐标。在3D模型上的每个顶
    - 左边：`0 / 0 = 0`，依然是黑色
    - 中间：`0 / 0 = 0`，依然是黑色
    - 中间偏右：`0.00001 / 0 = 1`，变为白色
-   - 右边：`0.5 / 0.5 = 1`，变为白色
+   - 右边：`0.5 / 0 = 1`，变为白色
 
-可以看出**除法一般是用来设置锐利度的**
+> 除以0时，若分子小于等于0 => 商为负无限大；若分子大于0 => 商为无限大。**不建议除以0**
+
+从下图可以看出**除法一般是用来设置锐利度的**
 
 <img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Divide-2.gif"></img>
+
+从下图可看出**除法在某些情况下还与光照有关**
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Divide-3.gif"></img>
+
+
+
+#### ------比较------
+
+#### [`Abs`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Abs)(绝对值)
+
+- input < 0           => output = -input
+- input = 0           => output = 0
+- input > 1           => output = input
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Abs-1.png"></img>
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Abs-2.png"></img>
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Abs-3.gif"></img>
+
+> Tips：
+>
+> `Relay`节点没有任何操作，只是为了Debug出图形
 
 
 
 #### [`Clamp`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Clamp)(限制)：控制显示的区域
+
+- input < Min               => output = Min
+- Min < input < Max   => output = input
+- input > Max              => output = Max
 
 将输入的值，控制在范围内
 
@@ -185,6 +245,43 @@ UV坐标是用于映射2D纹理到3D模型的坐标。在3D模型上的每个顶
 > - Clamp：其他区域依然显示，只是显示的不是原来的纹理，而是单色
 
 
+
+#### [`Saturate`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Saturate)(饱和)：归一化
+
+- input < 0           => output = 0
+- 0 < input < 1     => output = input
+- input > 1           => output = 1
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Saturate-1.png"></img>
+
+常于`Lerp`节点配合
+
+从下图可以看出，在使用`Saturate`节点之后，Y坐标大于1的值也是按1来计算的
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Saturate-2.gif"></img>
+
+
+
+#### [`Sign`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Sign)(符号)：硬化
+
+- input < 0           => output = -1
+- input = 0           => output = 0
+- input > 1           => output = 1
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Sign-1.png"></img>
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Sign-2.gif"></img>
+
+
+
+#### [`Step`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Step)(比较)：硬化
+
+- A<B     => output = 1
+- A>B     => output = 0
+
+
+
+#### ------限制范围------
 
 #### [`Remap`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Remap)(映射)：归一化
 
@@ -221,6 +318,21 @@ $$
 
 
 
+> 小技巧：
+>
+> 在控制数值范围的时候，只用考虑
+>
+> - 最小值如何才能达到目标最大值
+> - 最大值如何才能达到目标最小值
+>
+> 因为我们已经把最极端的两个例子给列出来了，其他的自然会满足需求
+>
+> <img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Remap-3.gif"></img>
+
+
+
+
+
 #### [`Lerp`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Lerp)(线性插值)：融合两个纹理
 
 融合两个纹理
@@ -228,6 +340,8 @@ $$
 <img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Lerp.gif"></img>
 
 
+
+#### ----反转----
 
 #### [`One Minus`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/One_Minus)(1-)：1-input
 
@@ -267,6 +381,8 @@ out = 1 - input，对与UV坐标和遮罩很有用，可以将Texture纹理变�
 
 
 
+#### ------其他------
+
 #### [`Scale`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Scale)(缩放)：裁剪区域
 
 这个节点的Global Preview显示有问题，改变缩放数值后需要重新连接输入接口才能正常显示
@@ -285,7 +401,7 @@ out = 1 - input，对与UV坐标和遮罩很有用，可以将Texture纹理变�
 
 {% grouppicture 2-2 %}
 
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Scale-3.png"></img>
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Scale-3.gif"></img>
 
 <img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Scale-4.png"></img>
 
@@ -293,53 +409,7 @@ out = 1 - input，对与UV坐标和遮罩很有用，可以将Texture纹理变�
 
 
 
-#### [`Saturate`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Saturate)(饱和)：归一化
-
-- input < 0           => output = 0
-- 0 < input < 1     => output = input
-- input > 1           => output = 1
-
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Saturate-1.png"></img>
-
-常于`Lerp`节点配合
-
-从下图可以看出，在使用`Saturate`节点之后，Y坐标大于1的值也是按1来计算的
-
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Saturate-2.gif"></img>
-
-
-
-#### [`Sign`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Sign)(符号)：硬化
-
-- input < 0           => output = -1
-- input = 0           => output = 0
-- input > 1           => output = 1
-
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Sign-1.png"></img>
-
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Sign-2.gif"></img>
-
-
-
-#### [`Abs`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Abs)(绝对值)
-
-- input < 0           => output = -input
-- input = 0           => output = 0
-- input > 1           => output = input
-
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Abs-1.png"></img>
-
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Abs-2.png"></img>
-
-<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Abs-3.gif"></img>
-
-> Tips：
->
-> `Relay`节点没有任何操作，只是为了Debug出图形
-
-
-
-#### --------------UV坐标-------------
+#### ========UV坐标========
 
 #### [`Texture Coordinates`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Texture_Coordinates)(UV坐标)
 
@@ -407,15 +477,21 @@ out = 1 - input，对与UV坐标和遮罩很有用，可以将Texture纹理变�
 
 
 
-#### --------------Time-------------
+#### ========顶点========
+
+#### [**Vertex Position**](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Vertex_Position)
+
+顶点位置坐标节点，输出每个顶点相对物体原点的坐标
+
+- 对于基础形状，如球形的最上方为(0, 0.5, 0)
+- 对于导入的物体，如人物，最上方为(0, 人物高度, 0)<font color="DarkGray">（并不是所有物体都是归一化的）</font>
+- 每个像素点的值不会随着物体的移动、旋转改变，但是缩放会改变
+
+
+
+#### ========Time========
 
 #### [`Time Parameters`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Time_Parameters)(时间)
 
 时间参数节点：输出Unity内部经过的时间(以秒为单位)
-
-
-
-
-
-
 
