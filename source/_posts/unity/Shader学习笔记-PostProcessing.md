@@ -325,3 +325,25 @@ Shader "Unlit/Chapter12-BrightnessSaturationAndContrast"
 Assets\Volume\Scripts\SourceCode1\DingRenderPassFeature.cs(11,17): warning CS0618: 'RenderTargetHandle' is obsolete: 'Deprecated in favor of RTHandle'
 ```
 
+
+
+
+
+---
+
+### 后记：
+
+突然记起来，之前在unity官方教程中学习过后处理的一点方法，如果只是简单的想要将Shader应用到场景中的物体上，可以按照[Shader Graph 遮挡剔除](https://learn.u3d.cn/tutorial/3drpg-core?chapterId=63562b29edca72001f21d19d#5fdb3f8a5a9d57002292df9b)的方法不使用代码直接将Shader应用到物体上。
+
+具体做法：
+
+在URP_Asset_Renderer上添加`Render Objects(Experimental)`，然后设置相应的名称、渲染时机、应用到物体的Layer、需要使用的材质。其他的具体设置可以点击上方的帮助查看官方文档
+
+<img class="half" src="/../images/unity/Shader学习笔记-PostProcessing/后记.png"></img>
+
+
+
+
+
+
+
