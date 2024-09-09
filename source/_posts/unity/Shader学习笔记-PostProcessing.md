@@ -1,7 +1,6 @@
 ---
 title: 【Unity】Shader学习笔记-PostProcessing
 date: 2024-09-02 16:50:06
-mathjax: true
 tags:
   - Unity
   - Shader
@@ -325,7 +324,13 @@ Shader "Unlit/Chapter12-BrightnessSaturationAndContrast"
 Assets\Volume\Scripts\SourceCode1\DingRenderPassFeature.cs(11,17): warning CS0618: 'RenderTargetHandle' is obsolete: 'Deprecated in favor of RTHandle'
 ```
 
-
+> 如何改Shader，参考这篇文章[警告を消す](https://zenn.dev/sakutaro/articles/convert_blitter#%E8%AD%A6%E5%91%8A%E3%82%92%E6%B6%88%E3%81%99)
+>
+> 需要多一条引用
+>
+> ```shader
+> #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
+> ```
 
 
 

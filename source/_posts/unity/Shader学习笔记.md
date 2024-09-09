@@ -1,7 +1,6 @@
 ---
 title: 【Unity】Shader学习笔记
 date: 2024-08-31 12:41:06
-mathjax: true
 tags:
   - Unity
   - Shader
@@ -281,6 +280,26 @@ UV坐标是用于映射2D纹理到3D模型的坐标。在3D模型上的每个顶
 
 
 
+#### [`Floor`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Floor)(去尾)：向下取整
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Floor-1.png"></img>
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Floor-2.gif"></img>
+
+
+
+#### [`Fract`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Fract)(取小数)
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Fract-1.png"></img>
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Fract-2.gif"></img>
+
+> 内部所作的事类似于`output = input - Floor(input)`
+
+
+
+
+
 #### ------限制范围------
 
 #### [`Remap`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Remap)(映射)：归一化
@@ -364,6 +383,8 @@ out = 1 - input，对与UV坐标和遮罩很有用，可以将Texture纹理变�
 - 纹理：变为负片
 
 <img class="half" src="/../images/unity/Shader学习笔记/数学运算符-OneMinus-4.png"></img>
+
+
 
 
 
