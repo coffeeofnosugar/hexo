@@ -221,7 +221,11 @@ Shader "CustomizeInformation_ASE"
 
 <img class="half" src="/../images/unity/Shader学习笔记/测试-2.png"></img>
 
+3. 也可以只用一个UV通道
+   - 只有一个UV通道，U、V当做普通的UV坐标了，所以只能用W和T
+   - 将`Custom1.x`映射到`TEXCOORD.z`上
 
+<img class="half" src="/../images/unity/Shader学习笔记/测试-3.png"></img>
 
 
 
