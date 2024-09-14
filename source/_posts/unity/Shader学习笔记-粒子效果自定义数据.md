@@ -8,7 +8,7 @@ tags:
 
 ### Shader制作
 
-<img class="half" src="/../images/unity/Shader学习笔记/ScreenshotASE.png"></img>
+<img class="half" src="/../images/unity/Shader学习笔记-粒子效果/ScreenshotASE.png"></img>
 
 这里需要注意的是：
 
@@ -197,17 +197,17 @@ Shader "CustomizeInformation_ASE"
    };
    ```
 
-<img class="half" src="/../images/unity/Shader学习笔记/粒子系统设置-1.png"></img>
+<img class="half" src="/../images/unity/Shader学习笔记-粒子效果/粒子系统设置-1.png"></img>
 
 2. 启动`Custom Data`，并添加`Vector4`
 
-<img class="half" src="/../images/unity/Shader学习笔记/粒子系统设置-2.png"></img>
+<img class="half" src="/../images/unity/Shader学习笔记-粒子效果/粒子系统设置-2.png"></img>
 
 
 
 ### 使用自定义参数
 
-<img class="half" src="/../images/unity/Shader学习笔记/效果展示.gif"></img>
+<img class="half" src="/../images/unity/Shader学习笔记-粒子效果/效果展示.gif"></img>
 
 
 
@@ -215,17 +215,17 @@ Shader "CustomizeInformation_ASE"
 
 1. 经测试，U、V并不一定是只能控制X、Y方向的移动，可以控制其他数据。换句话说，这个节点已经与普通的UV坐标节点没有任何关系了，可以直接当做`Vector4`来使用。如下图连接，U控制流动，V控制透明，W、T控制X、Y方向的偏移
 
-<img class="half" src="/../images/unity/Shader学习笔记/测试-1.png"></img>
+<img class="half" src="/../images/unity/Shader学习笔记-粒子效果/测试-1.png"></img>
 
 2. 如果需要再添加一个参数，可以再添加一个UVSet=2的节点。并在粒子系统中添加`Custom2.xyzw(TEXCOORD2.xyzw)`。
 
-<img class="half" src="/../images/unity/Shader学习笔记/测试-2.png"></img>
+<img class="half" src="/../images/unity/Shader学习笔记-粒子效果/测试-2.png"></img>
 
 3. 也可以只用一个UV通道
    - 只有一个UV通道，U、V当做普通的UV坐标了，所以只能用W和T
    - 将`Custom1.x`映射到`TEXCOORD.z`上
 
-<img class="half" src="/../images/unity/Shader学习笔记/测试-3.png"></img>
+<img class="half" src="/../images/unity/Shader学习笔记-粒子效果/测试-3.png"></img>
 
 
 

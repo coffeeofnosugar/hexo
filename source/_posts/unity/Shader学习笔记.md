@@ -402,6 +402,22 @@ out = 1 - input，对与UV坐标和遮罩很有用，可以将Texture纹理变�
 
 
 
+#### ------三角函数------
+
+#### [`Tan`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Tan)(正切)
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Tan.png"></img>
+
+
+
+#### [`ATan`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/ATan)(反正切)
+
+<img class="half" src="/../images/unity/Shader学习笔记/数学运算符-ATan.png"></img>
+
+
+
+
+
 #### ------其他------
 
 #### [`Scale`](https://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Scale)(缩放)：裁剪区域

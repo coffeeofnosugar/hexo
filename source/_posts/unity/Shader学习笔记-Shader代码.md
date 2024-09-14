@@ -10,7 +10,7 @@ tags:
 
 结合图形编辑器认识代码，下面是使用ASE制作的一个很简单的两个纹理相乘的Shader
 
-<img class="half" src="/../images/unity/Shader学习笔记/SampleASE.png"></img>
+<img class="half" src="/../images/unity/Shader学习笔记-Shader代码/SampleASE.png"></img>
 
 ```C#
 Shader "New Amplify Shader"
