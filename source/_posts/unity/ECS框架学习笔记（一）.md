@@ -48,6 +48,10 @@ tags:
    - 原因：游戏在第一帧时子场景还没有加载完，所以单例不存在
    - 解决方法：在`OnCreate()`中添加`RequireForUpdate<T>`
    - 如果不希望每帧都调用单例，可以在`OnStartRunning()`中调用单例，这方法只适用`SystemBase`，因为`ISystem`没有该方法
+2. Resolve Loading Entity Scene Failed errors，解决加载Entity Scene失败错误
+   - 貌似是Unity的Bug
+   - 可以重启Unity Editor，清除实体缓存。Edit-Preferences-Entities-ClearEntityCache
+3. 保存主场景和子场景
 
 
 
