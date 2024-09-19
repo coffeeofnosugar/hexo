@@ -17,6 +17,162 @@ tags:
 
 ---
 
+### 技巧
+
+#### 存储单例
+
+如果确定整个场景只有确定个数的实体，并且数量也不会改变，那么可以直接在`OnStartRunning`直接获取到该实体并保存
+
+经测试确实可行
+
+```C#
+public partial class PlayerMoveSystem_______ : SystemBase
+{
+    private Entity playerEntity;
+
+    protected override void OnCreate()
+    {
+        RequireForUpdate<PlayerTag>();
+    }
+
+    protected override void OnStartRunning()
+    {
+        // 获取一个
+        playerEntity = SystemAPI.GetSingletonEntity<PlayerTag>();
+        // 获取多个
+        // foreach (var (tag, entity) in SystemAPI.Query<PlayerTag>().WithEntityAccess())
+        // {
+        //     playerEntity = entity;
+        //     break; // 只需要第一个玩家实体
+        // }
+    }
+
+    protected override void OnUpdate()
+    {
+        var deltaTime = SystemAPI.Time.DeltaTime;
+        var moveInput = SystemAPI.GetComponent<PlayerMoveInput>(playerEntity);
+        var transform = SystemAPI.GetComponentRW<LocalTransform>(playerEntity);
+        var speed = SystemAPI.GetComponent<Speed>(playerEntity);
+
+        transform.ValueRW.Position.xz += moveInput.Value * speed.Value * deltaTime;
+    }
+}
+```
+
+```C#
+[BurstCompile]
+[UpdateBefore(typeof(TransformSystemGroup))]
+public partial struct PlayerMoveSystem : ISystem
+{
+    [BurstCompile]
+    public void OnCreate(ref SystemState state)
+    {
+        state.RequireForUpdate<BeginInitializationEntityCommandBufferSystem.Singleton>();
+    }
+
+    [BurstCompile]
+    public void OnDestroy(ref SystemState state) { }
+
+    [BurstCompile]
+    public void OnUpdate(ref SystemState state)
+    {
+        var deltaTime = SystemAPI.Time.DeltaTime;
+
+        /*
+        JobHandle job = 
+            new PlayerMoveJob()
+        {
+            DeltaTime = deltaTime
+        }.Schedule(state.Dependency);
+        job.Complete();*/
+
+        foreach (var (moveInput, transform, speed) in SystemAPI.Query<PlayerMoveInput, RefRW<LocalTransform>, Speed>())
+        {
+            transform.ValueRW.Position.xz += moveInput.Value * speed.Value * deltaTime;
+        }
+    }
+}
+```
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/存储实体.png"></img>
+
+> 使用job与直接foreach一样，这里就不贴图了
+
+
+
+#### 监控数量
+
+使用`EntityQuery`监控指定类型的数量
+
+```c#
+public partial class PlayerSpawnerSystem : SystemBase
+{
+	protected override void OnUpdate()
+	{
+		// 获取单例，如果场景中没有或者有2个以上，Unity将报错
+		EntityQuery playerEntityQuery = EntityManager.CreateEntityQuery(typeof(PlayerTag));
+
+		// 只是读取该实例，所以不用担心值类型、引用类型的问题
+		PlayerSpawner playerSpawner = SystemAPI.GetSingleton<PlayerSpawner>();
+
+		// 创建一个命令缓冲器，将任务分批次执行
+		var entityCommandBuffer = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
+			.CreateCommandBuffer(World.Unmanaged);
+
+		int spawnAmount = 10;
+		if (playerEntityQuery.CalculateEntityCount() < spawnAmount)
+		{
+			// 注释掉常规生命周期
+			// EntityManager.Instantiate(playerSpawner.playerPrefab);
+			
+			// 分批次的创建物体
+			var entity = entityCommandBuffer.Instantiate(playerSpawner.playerPrefab);
+			
+			// 并不是真正的设置，而是创建了一个新的Component替换旧的
+			entityCommandBuffer.SetComponent(entity, new Speed
+			{
+				value = DotsHelpers.GetRandomFloat(2, 5)
+			});
+		}
+	}
+}
+```
+
+`ISystem`用法
+
+```C#
+var query = SystemAPI.QueryBuilder().WithAll<NewEnemyTag>().Build();
+```
+
+#### 移除组件
+
+确认之后不会再使用的组件可以使用缓冲器移除
+
+```C#
+var ecb = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);		// 延迟到这一帧初始组结束时移除
+foreach (var (_, entity) in SystemAPI.Query<NewEnemyTag>().WithEntityAccess())
+{
+    ecb.RemoveComponent<NewEnemyTag>(entity);
+}
+```
+
+```C#
+var ecb = new EntityCommandBuffer(Allocator.Temp);			// 立即移除
+foreach (var (_, entity) in SystemAPI.Query<NewEnemyTag>().WithEntityAccess())
+{
+    ecb.RemoveComponent<NewEnemyTag>(entity);
+}
+ecb.Playback(state.EntityManager);
+```
+
+
+
+
+
+
+
+---
+
 ### `BlobArray<T>`
 
 特点：
@@ -89,6 +245,14 @@ tags:
 ### `System`报错
 
 #### `InvalidOperationException: The previously scheduled 'IJobEntity' writes to the ComponentTypeHandle<Unity.Collections.NativeText.ReadOnly>`
+
+```C#
+InvalidOperationException: The previously scheduled job <AJob> writes to the ComponentTypeHandle<Unity.Collections.NativeText.ReadOnly> <AJob>.<Value>.
+You are trying to schedule a new job <BJob>, which reads from the same ComponentTypeHandle<Unity.Collections.NativeText.ReadOnly> (via <BJob>.<Value>).
+To guarantee safety, you must include PlayerMoveSystem:PlayerMoveJob as a dependency of the newly scheduled job.
+```
+
+- 两个任务共同访问了同一个`IComponentData`
 
 ##### 原因
 
@@ -164,6 +328,8 @@ public readonly partial struct EnemyMoveAspect : IAspect
 
 ##### 解决方法
 
+方法一：
+
 使用`UpdateAfer`属性定义执行顺序
 
 ```C#
@@ -172,6 +338,38 @@ public partial struct EnemyMoveSystem : ISystem
 ```
 
 这样，在成功生成敌人后，在执行移动系统，移动系统就不会在敌人还在生成的时候就修改其组件
+
+方法二：
+
+将选择其中Entity较少的任务设置依赖项，并等待其编译完成
+
+```C#
+public partial struct EnemyMoveSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        JobHandle job = new BJob().Schedule(state.Dependency);		// 设置依赖项
+        job.Complete();		// 主线程被阻塞，直到该任务完成
+    }
+}
+```
+
+方法三：
+
+使用`Query`获取`Aspect`
+
+```C#
+public partial struct EnemyMoveSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        foreach(var aspect in SystemAPI.Quert<RefRW<MoveAspect>>.WithEntityAccess())
+        {
+            ...
+        }
+    }
+}
+```
 
 
 

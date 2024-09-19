@@ -36,9 +36,11 @@ tags:
 
 ### 注意事项
 
-#### Component
+#### IComponentData
 
-由于ECS中的C是**结构体**，在引用其内部数据的时候要注意引用的是其本体还是复制副本
+- 由于ECS中的C是**结构体**，在引用其内部数据的时候要注意引用的是其本体还是复制副本<font color="DarkGray">（经过学习后发现如果使用的方法正确，基本上不会碰到这个问题，Unity已经帮我们封装好了）</font>
+- System绑定的依赖是`IComponentData`而不是`Entity`
+- Aspect绑定的才是`Entity`
 
 #### Build
 
@@ -47,11 +49,28 @@ tags:
 1. 关闭Entity子场景，这样在editor中将优先加载子场景。运行游戏时可能会遇到报错，例如在`OnCreate()`和`OnUpdate()`中获取单例就会报错
    - 原因：游戏在第一帧时子场景还没有加载完，所以单例不存在
    - 解决方法：在`OnCreate()`中添加`RequireForUpdate<T>`
-   - 如果不希望每帧都调用单例，可以在`OnStartRunning()`中调用单例，这方法只适用`SystemBase`，因为`ISystem`没有该方法
+   - 如果不希望每帧都调用单例，可以在`OnStartRunning()`中调用单例，这方法只适用`SystemBase`，因为`ISystem`没有该方法<font color="DarkGray">（除了单例，如果是确定个数的实体也适用该方法）</font>
 2. Resolve Loading Entity Scene Failed errors，解决加载Entity Scene失败错误
    - 貌似是Unity的Bug
    - 可以重启Unity Editor，清除实体缓存。Edit-Preferences-Entities-ClearEntityCache
 3. 保存主场景和子场景
+
+#### `System`的生命周期
+
+一般情况下可以查看`Systems`窗口查看执行顺序，但如果使用了缓冲器就得注意顺序了
+
+```C#
+var ecb = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);		// 在初始化组结束的时候执行
+ecb.RemoveComponent<NewEnemyTag>(entity);
+```
+
+```C#
+var ecb = new EntityCommandBuffer(Allocator.Temp);
+ecb.RemoveComponent<NewEnemyTag>(entity);
+ecb.Playback(state.EntityManager);				// 立即执行
+```
+
+
 
 
 
@@ -337,7 +356,9 @@ public partial struct MoveJob : IJobEntity
 
 >  当实体数量较多，并且每个实体的处理相对独立（没有数据竞争）时，`ScheduleParallel` 能显著提高性能
 >
-> 但如果任务较小或无法保证线程安全，则可以使用 `Schedule`。
+>  但如果任务较小或无法保证线程安全，则可以使用 `Schedule`。
+>
+>  使用`job.Complete()`后，主线程将被阻塞，直到该作业完成
 
 
 

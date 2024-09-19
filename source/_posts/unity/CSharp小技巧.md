@@ -13,6 +13,115 @@ tags:
 
 {% note default %}
 
+### `Operator`重载运算符
+
+{% endnote %}
+
+重写`+`、`-`、`*`、`/`、`|`、`$`、`!=`、`==`，完全由自己定义，返回的类型甚至不需要是自身
+
+```C#
+public struct CustomStruct		// 结构体或类都可以
+{
+    public float X, Y, Z;
+
+    public static CustomStruct operator +(CustomStruct a, CustomStruct b)
+    {
+        return new CustomStruct { X = a.X + b.X, Y = a.Y + b.Y, Z = a.Z + b.Z };
+    }
+
+    public override string ToString()
+    {
+        return $"({X}, {Y}, {Z})";
+    }
+}
+```
+
+可以像数字一样直接使用+法了
+
+```C#
+CustomStruct cs1 = new CustomStruct() { X = 1, Y = 2, Z = 3 };
+CustomStruct cs2 = new CustomStruct() { X = 4, Y = 5, Z = 6 };
+
+Console.WriteLine($"cs1 + cs2 = {cs1 + cs2}");		// 运算时自动调用`operator +`方法
+```
+
+
+
+{% note default %}
+
+### `implicit`隐式类型转换
+
+{% endnote %}
+
+```C#
+public struct PlayerMoveInput
+{
+    public float Value;
+
+    public static implicit operator PlayerMoveInput(float value)
+    {
+        return new PlayerMoveInput() { Value = value };
+    }
+
+    public static implicit operator float(PlayerMoveInput input)
+    {
+        return input.Value;
+    }
+}
+```
+
+```c#
+var input = new PlayerMoveInput();
+
+input = 1;			// 隐式转换 float -> PlayerMoveInput
+
+// 需要注意我们这里并没有重写ToString，但是依然输出了1，一般是输出`PlayerMoveInput`
+Console.WriteLine(input);   // 隐式转换 PlayerMoveInput -> float
+```
+
+
+
+{% note default %}
+
+### `explicit`显式类型转换
+
+{% endnote %}
+
+和隐式转换的语法一样，将`implicit`换成`explicit`就OK了
+
+```C#
+public class PlayerMoveInput
+{
+    public float Value;
+
+    public static explicit operator PlayerMoveInput(float value)
+    {
+        return new PlayerMoveInput() { Value = value };
+    }
+
+    public static explicit operator float(PlayerMoveInput input)
+    {
+        return input.Value;
+    }
+}
+```
+
+```C#
+var input = new PlayerMoveInput();
+
+input = (PlayerMoveInput)1;      // 显示转换 float -> PlayerMoveInput
+
+Console.WriteLine((float)input);   // 输出1 显式转换 PlayerMoveInput -> float
+```
+
+
+
+
+
+
+
+{% note default %}
+
 ### 访问权限
 
 {% endnote %}
