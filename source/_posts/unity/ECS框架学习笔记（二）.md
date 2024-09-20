@@ -1,8 +1,9 @@
 ---
-title: 【Unity】ECS框架学习笔记（二）
+title: 【Unity】ECS框架学习笔记（二）——踩坑
 date: 2024-09-15 07:11:06
 tags:
   - Unity
+  - ECS
 ---
 
 ### 属性
@@ -109,26 +110,17 @@ public partial class PlayerSpawnerSystem : SystemBase
 {
 	protected override void OnUpdate()
 	{
-		// 获取单例，如果场景中没有或者有2个以上，Unity将报错
 		EntityQuery playerEntityQuery = EntityManager.CreateEntityQuery(typeof(PlayerTag));
 
-		// 只是读取该实例，所以不用担心值类型、引用类型的问题
 		PlayerSpawner playerSpawner = SystemAPI.GetSingleton<PlayerSpawner>();
 
-		// 创建一个命令缓冲器，将任务分批次执行
-		var entityCommandBuffer = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
-			.CreateCommandBuffer(World.Unmanaged);
+		var entityCommandBuffer = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(World.Unmanaged);
 
 		int spawnAmount = 10;
 		if (playerEntityQuery.CalculateEntityCount() < spawnAmount)
 		{
-			// 注释掉常规生命周期
-			// EntityManager.Instantiate(playerSpawner.playerPrefab);
-			
-			// 分批次的创建物体
 			var entity = entityCommandBuffer.Instantiate(playerSpawner.playerPrefab);
 			
-			// 并不是真正的设置，而是创建了一个新的Component替换旧的
 			entityCommandBuffer.SetComponent(entity, new Speed
 			{
 				value = DotsHelpers.GetRandomFloat(2, 5)
@@ -138,13 +130,36 @@ public partial class PlayerSpawnerSystem : SystemBase
 }
 ```
 
-`ISystem`用法
+或则
+
+```C#
+public partial struct ClientRequestGameEntrySystem : ISystem
+{
+    private EntityQuery _pendingNetworkIdQuery;
+
+    public void OnCreate(ref SystemState state)
+    {
+        // 虽然是在OnCreate中创建的Query，但是并没有销毁掉，所以还是会一直更新里面的实体
+        var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<NetworkId>().WithNone<NetworkStreamInGame>();
+        _pendingNetworkIdQuery = state.GetEntityQuery(builder);
+        state.RequireForUpdate(_pendingNetworkIdQuery);
+    }
+    public void OnUpdate(ref SystemState state)
+    {
+        var pendingNetworkIds = _pendingNetworkIdQuery.ToEntityArray(Allocator.Temp);
+    }
+}
+```
+
+`ISystem`的用法，需要使用`.Dispose()`手动释放资源
 
 ```C#
 var query = SystemAPI.QueryBuilder().WithAll<NewEnemyTag>().Build();
 ```
 
 #### 移除组件
+
+v1.2.4貌似添加和删除组件都只能使用缓冲器
 
 确认之后不会再使用的组件可以使用缓冲器移除
 

@@ -1,8 +1,9 @@
 ---
-title: 【Unity】ECS框架学习笔记（一）
+title: 【Unity】ECS框架学习笔记（一）——初识
 date: 2024-09-15 07:11:06
 tags:
   - Unity
+  - ECS
 ---
 
 ### 安装
@@ -15,7 +16,11 @@ tags:
 
 - `com.unity.entities`：包本体
 - `com.unity.entities.graphics`：可使用脚本渲染管道(SRP)渲染实体
-- `com.unity.physics`：实体的状态和物理系统
+- `com.unity.physics`：实体的状态和物理系统，还需要下载`Samples`中的`Custom Physics Authoring`
+
+可选：
+
+- `com.unity.netcode`：服务器
 
 #### 环境
 
@@ -186,7 +191,7 @@ ecb.Playback(state.EntityManager);				// 立即执行
 
 ### 窗口介绍
 
-<img class="half" src="/../images/unity/ECS框架学习笔记/调试窗口.png"></img>
+<img class="half" src="/../images/unity/ECS框架学习笔记/窗口.png"></img>
 
 - Systems
 
@@ -201,7 +206,7 @@ ecb.Playback(state.EntityManager);				// 立即执行
           .CreateCommandBuffer(World.Unmanaged);
       ```
 
-    <img class="half" src="/../images/unity/ECS框架学习笔记/调试窗口.png"></img>
+    <img class="half" src="/../images/unity/ECS框架学习笔记/System-EntityCount.png"></img>
 
 
 
