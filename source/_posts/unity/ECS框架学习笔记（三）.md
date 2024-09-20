@@ -116,7 +116,7 @@ private void StartClient()
 }
 ```
 
-> - `World.DefaultGameObjectInjectionWorld = clientWorld;`这个很重要，可以直接将对Default World世界的操作同步到Client World，以免每次操作都要使用Client的API。我们已经删除掉默认世界了，所以不会有重复的多余操作
+> - <font color="red">注意</font>：`World.DefaultGameObjectInjectionWorld = clientWorld;`这个很重要，可以直接将对Default World世界的操作同步到Client World，以免每次操作都要使用Client的API。我们已经删除掉默认世界了，所以不会有重复的多余操作
 > - 需要注意的是，这里并没有向服务器发送信息，只是将GameObject的信息传递到Entities的客户端中
 
 
@@ -371,7 +371,54 @@ foreach (var (levelToLoad, rpcEntity) in
 
 <img class="half" src="/../images/unity/ECS框架学习笔记/数据传递流程.png"></img>
 
+1. Client World创建了一个数据包
+2. NetCode捕获到到该数据包后删除掉该数据包，并同时在Server World还原这个数据包（只将`SendRpcCommandRequest`改为了`ReceiveRpcCommandRequest`，其他数据完全一样）。这一步骤是NetCode完全自动化完成的
+3. 程序员在Server World手动捕获到系统还原的这个数据包，就成功获取到数据了
 
+> 关于这两个数据包到底是不是同一个Entity的问题：
+> 直接使用代码获取到这两个Entity的`Index`、`Version`、`HashCode`就知道了
+>
+> 客户端：
+>
+> ```c#
+> public void OnUpdate(ref SystemState state)
+> {
+>     Entity requestTeamEntity = Entity.Null;
+>     // 输出刚创建时的对象信息，以防狸猫换太子
+>     Debug.Log($"Send 1 : {requestTeamEntity == Entity.Null} Index: {requestTeamEntity.Index} Version: {requestTeamEntity.Version} HashCode: {requestTeamEntity.GetHashCode()}");
+>     var ecb = new EntityCommandBuffer(Allocator.Temp);
+>     foreach (Entity pendingNetworkId in pendingNetworkIds)
+>     {
+>         requestTeamEntity = ecb.CreateEntity();
+>         ecb.AddComponent(requestTeamEntity, new MobaTeamRequest() { Value = requestedTeam });
+>         ecb.AddComponent(requestTeamEntity, new SendRpcCommandRequest() { TargetConnection = pendingNetworkId });
+>     }
+> 
+>     ecb.Playback(state.EntityManager);
+>     Debug.Log($"Send 1 : {requestTeamEntity == Entity.Null} Index: {requestTeamEntity.Index} Version: {requestTeamEntity.Version} HashCode: {requestTeamEntity.GetHashCode()}");
+> }
+> ```
+>
+> > <font color="DarkGray">（不重要，可以跳过不看）代码为什么写成这样，要输出次：为了确认Entity是在缓存器执行完之后的信息，所以将其放在了最后面。然后又因为`requestTeamEntity`是定义在foreach中的，所以得现在最上面创建一个空的Entity，这样才能在`.Playback()`后面使用该Entity，要不然编译都不通过，并且从输出上来看，我们确实是输出了正确的Entity信息</font>
+> >
+> > 拓展：经过实际上的测试，发现`requestTeamEntity = ecb.CreateEntity();`在这一步创建空物体的时候就**已经确定了该物体**的`Index`、`Version`、`HashCode`了，所以在任意地方输出都可以
+>
+> 服务端：直接在捕获后输出信息
+>
+> ```C#
+> foreach (var (teamRequest, requestSource, requestEntity) 
+>          in SystemAPI.Query<MobaTeamRequestRPC, ReceiveRpcCommandRequest>().WithEntityAccess())
+> {
+> 	Debug.Log($"Receive 0 : Index: {requestEntity.Index} Version: {requestEntity.Version} HashCode: {requestEntity.GetHashCode()}");
+> ```
+>
+> <img class="half" src="/../images/unity/ECS框架学习笔记/数据包HashCode.png"></img>
+>
+> 为了实验的严谨性，该玩家是同时创建了客户端和服务端，这两个世界都是在他这一个程序上工作的。
+>
+> 但是从输出结果可以看出来，两个Entity确实不是同一个。
+>
+> 并且如果仔细想想，确实两个世界都不一样，怎么也不太可能是同一个Entitiy
 
 
 
