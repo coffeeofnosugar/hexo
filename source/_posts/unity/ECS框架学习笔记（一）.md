@@ -60,6 +60,8 @@ tags:
    - 可以重启Unity Editor，清除实体缓存。Edit-Preferences-Entities-ClearEntityCache
 3. 保存主场景和子场景
 
+> 放在Entities中的子场景可以不用放在`Scenes In Builde`中
+
 #### `System`的生命周期
 
 一般情况下可以查看`Systems`窗口查看执行顺序，但如果使用了缓冲器就得注意顺序了
@@ -509,7 +511,7 @@ public class PlayerVisual : MonoBehaviour
 
 ### 性能测试
 
-使用了ECS，那当然少不了喜闻乐见的性能测试了，生成20000个Player
+既然使用了ECS，那当然少不了喜闻乐见的性能测试了，生成20000个Player
 
 <img class="half" src="/../images/unity/ECS框架学习笔记/性能测试-1.png"></img>
 

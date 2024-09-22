@@ -519,3 +519,68 @@ public interface IPrioritizable : IState
 
 ​		学习的路还很长，这次状态机的源码并不是`Animancer`的核心源码，只是其中的一个小部分而已，并且有限状态机也并不是很难的一个模型。后续还需要继续研究源码，了解更多的编程技巧和模型框架。
 
+
+
+
+
+---
+
+### 示例补充
+
+除了[` StateMachine<TState>`](https://kybernetik.com.au/animancer/api/Animancer.FSM/StateMachine_1/)外，还提供了一个[`StateMachine<TKey, TState>`](https://kybernetik.com.au/animancer/api/Animancer.FSM/StateMachine_2/)
+后者得花费更多时间和精力维护，但他对与抽象和需要序列化当前状态的情况很有用
+
+```c#
+public class Character : MonoBehaviour
+{
+	[SerializeField] private State _Idle;
+
+	public State Idle => _Idle;
+    public StateMachine<State> FSM { get; private set; }
+	protected virtual void Awake()
+    {
+		FSM = new StateMachine<State>(_Idle);		// 初始化
+	}
+}
+
+public class SomethingElse
+{
+	public void EnterIdle(Character character)
+  	{
+    	character.FSM.TryEnterState(character.Idle);	// 改变状态
+    }
+}
+```
+
+确实比较鸡肋
+
+```c#
+public class Character : MonoBehaviour
+{
+  	[SerializeField] private State _Idle;
+    [SerializeField] private State _Walk;
+
+  	public enum Key { Idle, Walk }
+
+  	public StateMachine<Key, State> FSM { get; private set; }
+
+  	protected virtual void Awake()
+  	{
+    	FSM = new StateMachine<Key, State>();
+    	FSM.Add(Key.Idle, _Idle);				// 需要注册状态
+        FSM.Add(Key.Walk, _Walk);
+    	FSM.ForceSetState(Key.Idle, _Idle);		// 进入默认状态
+  	}
+}
+
+public class SomethingElse
+{
+  	public void EnterIdle(Character character)
+  	{
+    	character.FSM.TryEnterState(Key.Idle);		// 只用访问FSM，直接使用枚举选择状态
+  	}
+}
+```
+
+
+

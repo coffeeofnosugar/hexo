@@ -16,6 +16,23 @@ tags:
 
 
 
+
+
+---
+
+### 实用接口
+
+```C#
+SystemAPI.HasComponent<ChampTag>(entity)；									//判断entitiy是否拥有某组件
+var newtworkId = SystemAPI.GetComponent<GhostOwner>(entity).NetwordId;		// 直接获取entity上的组件
+```
+
+
+
+
+
+
+
 ---
 
 ### 技巧
@@ -61,20 +78,13 @@ public partial class PlayerMoveSystem_______ : SystemBase
 ```
 
 ```C#
-[BurstCompile]
 [UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct PlayerMoveSystem : ISystem
 {
-    [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BeginInitializationEntityCommandBufferSystem.Singleton>();
     }
-
-    [BurstCompile]
-    public void OnDestroy(ref SystemState state) { }
-
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         var deltaTime = SystemAPI.Time.DeltaTime;
@@ -97,7 +107,7 @@ public partial struct PlayerMoveSystem : ISystem
 
 <img class="half" src="/../images/unity/ECS框架学习笔记/存储实体.png"></img>
 
-> 使用job与直接foreach一样，这里就不贴图了
+> 使用job与直接foreach的性能一样，这里就不贴图了
 
 
 
@@ -130,7 +140,7 @@ public partial class PlayerSpawnerSystem : SystemBase
 }
 ```
 
-或则
+或者
 
 ```C#
 public partial struct ClientRequestGameEntrySystem : ISystem
