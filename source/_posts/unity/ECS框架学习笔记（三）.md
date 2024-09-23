@@ -626,24 +626,26 @@ ecb.SetComponent(newCharacterEntity, new URPMaterialPropertyBaseColor{ Value = t
 - 输入数据是客户端和服务器之间的非常频繁传递的数据
 - 有一个专门用来传递的组件`IInputComponentData`，比`ICommandData`要好用
 
-> [`ICommandData`](https://docs.unity3d.com/Packages/com.unity.netcode@1.3/api/Unity.NetCode.ICommandData.html)
->
-> - 如果需要频繁的从客户端向服务器发送数据应该使用`ICommandData`而不是`RPC`，`ICommandData`有优化
->
-> - 类似于一个`Dynamic Buffer`动态缓冲器，他将保存最后64`NetWorkTick`的数据
->
-> - 需要设置每帧获取多少Tick
->
-> ```C#
-> public struct DamageThisTick : ICommandData{
->     public NetworkTick Tick {get; set;}
->     public int Value
-> }
-> ```
->
-> `IInputComponentData`不需要设置Tick，系统自动完成
->
-> `InputEvent`是存储在`IInputComponentData`中的输入事件。服务器一般为 60帧，如果客户端为120帧，服务器很有可能检测不到玩家的输入，`InputEvent`针对这个问题进行的优化。
+#### [`ICommandData`](https://docs.unity3d.com/Packages/com.unity.netcode@1.3/api/Unity.NetCode.ICommandData.html)
+
+- 如果需要频繁的从客户端向服务器发送数据应该使用`ICommandData`而不是`RPC`，`ICommandData`有优化
+
+ - <font color='red'>**必须是从客户端发送到服务器**</font>，以控制实体的命令，或是保存状态，如技能CD、伤害等凡是与时间相关的
+- 类似于一个`Dynamic Buffer`动态缓冲器，他将保存最后64`NetWorkTick`的数据
+- 默认情况下不会从服务器复制到所有客户端，需要使用`GhostComponent`属性设置。因为`ICommandData`的工作方式，不建议设置为`SendToOwnerType.SendToOwner`，将被视为错误并并忽略
+
+```C#
+public struct DamageThisTick : ICommandData{
+    public NetworkTick Tick {get; set;}
+    public int Value
+}
+```
+
+#### `IInputComponentData`
+
+不需要设置Tick，系统自动完成
+
+`InputEvent`是存储在`IInputComponentData`中的输入事件。服务器一般为 60帧，如果客户端为120帧，服务器很有可能检测不到玩家的输入，`InputEvent`针对这个问题进行的优化。
 
 
 
@@ -1089,9 +1091,73 @@ public partial struct ApplyDamageSystem : ISystem
 
 ### 技能CD
 
+在释放技能前判断是否达到CD
+
+```c#
+public struct AbilityCooldownTicks : IComponentData
+{
+    public uint AoeAbility;		// 烘焙预设技能CD
+}
+```
+
+```C#
+[GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+public struct AbilityCooldownTargetTicks : ICommandData
+{
+    public NetworkTick Tick { get; set; }
+    public NetworkTick AoeAbility;				// 存储技能在多少Tick结束CD
+}
+```
+
+为了避免服务器跳帧，还需要将前几Tick的数据来比较
+
+下面的代码可能会让人很困惑，为什么要多此两举的，既要将释放技能的时机向后移动1Tick，又要在释放技能的时候把前几Tick的数据来做比较。但这种方法是经过社区测试，而得出的一个相对较好的判断技能CD的方式。
+
+```c#
+var isOnCooldown = true;
+var curTargetTicks = new AbilityCooldownTargetTicks();
+
+// networkTime.SimulationStepBatchSize表示务器Tick步长，通常为1（即正常状态）
+// 使用for循环的原因是为了避免服务器卡顿，而跳过了cd检测，进而永远都无法解除冷却了
+for (var i = 0u; i < networkTime.SimulationStepBatchSize; i++)
+{
+    var testTick = currentTick;
+    testTick.Subtract(i);
 
 
+    if (!aoe.CooldownTargetTicks.GetDataAtTick(testTick, out curTargetTicks))   // 获取上一次释放技能的Tick
+    {
+        curTargetTicks.AoeAbility = NetworkTick.Invalid;        // 是第一次释放技能，就设置为无效
+    }
 
+    // 如果值无效 或者 达到目标Tick，就说明CD好了
+    if (curTargetTicks.AoeAbility == NetworkTick.Invalid ||     // 无效，即第一次释放技能
+        !curTargetTicks.AoeAbility.IsNewerThan(currentTick))    // 当前Tick大于目标Tick，说明CD过了
+    {
+        isOnCooldown = false;
+        break;
+    }
+}
+
+if (isOnCooldown) continue;
+
+
+if (输入检测)
+{
+    // (技能释放)...
+    
+    if (state.WorldUnmanaged.IsServer()) continue;      // 服务器不做后续处理
+    var newCooldownTargetTick = currentTick;
+    newCooldownTargetTick.Add(aoe.CooldownTicks);
+    curTargetTicks.AoeAbility = newCooldownTargetTick;
+
+    var nextTick = currentTick;			    // 为什么要记录到下一个Tick：
+    nextTick.Add(1u);				    	// 当在添加ICommandData的时候，我们需要将他的执行的Tick+1
+    curTargetTicks.Tick = nextTick;    		// 要不然会导致，客户端释放了技能，但是服务端并没有同步
+											// 虽然看起来很怪，但这确实是可行的
+    aoe.CooldownTargetTicks.AddCommandData(curTargetTicks);
+}
+```
 
 
 
