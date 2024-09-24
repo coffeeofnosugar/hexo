@@ -6,6 +6,28 @@ tags:
   - ECS
 ---
 
+### 环境配置
+
+#### 包体
+
+参考第一篇
+
+#### 项目设置
+
+- RUP-HighFidelity-Renderer => Rendering => Rendering Path 设置为 Forward+
+- Project Settings => Player => Resolution and Presentation => Resolution => 勾选 Run In Background
+- Project Settings => Player => Other Settings => Configuration => Scripting Backend 设置为 IL2CPP
+- Project Settings => Player => Other Settings => Configuration => 勾选 Use incremental GC
+- Project Settings => Multiplayer => Create 默认设置就OK
+- Preferences => Entities => Baking => Scene View Mode 设置为 Runtime Data
+- Create => Unity Physics => Physics Category Names => 自定义名称（可参考文章的射线碰撞检测图片）
+
+
+
+
+
+---
+
 ### 夺回生成世界的控制权
 
 在下载NetCode包体之后，启动游戏时Entities会生成ClientWorld和ServerWorld两个世界。
@@ -140,6 +162,7 @@ public partial struct ClientRequestGameEntrySystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         // 捕获有`NetworkId`且没有`NetworkStreamInGame`的实体
+        // "NetworkStreamInGame"是unity为我们准备的一个统一标签，表示该client已经处理过登录了
         var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<NetworkId>().WithNone<NetworkStreamInGame>();
         _pendingNetworkIdQuery = state.GetEntityQuery(builder);
         state.RequireForUpdate(_pendingNetworkIdQuery);
@@ -353,7 +376,7 @@ public partial struct ServerProcessGameEntryRequestSystem : ISystem
 #### 发送数据模版：
 
 ```C#
-// 代可能编译都不通过，但只是想简单的告诉你发送RPC的方法就是：
+// 下面代码可能无法通过编译，但只是想简单的告诉你发送RPC的方法就是：
 // 创建一个实体，并在其上面添加实现`IRpcCommand`接口的数据组件，和`SendRpcCommandRequest`的特殊组件就OK了
 // 其他的系统会自动帮你完成
 public struct LoadLevelRPC : IRpcCommand
@@ -370,14 +393,21 @@ private void LoadNewLevel(int levelIndex)
 }
 ```
 
-这里的`SendRpcCommandRequest`没有指明对象
+这里的`SendRpcCommandRequest`没有指明对象，可以使用`new SendRpcCommandRequest() { TargetConnection = pendingNetworkId }`指定客户端ID：
 
-- 如果这是客户端发送的数据包，那么还是只会发送给服务端
-- 如果这是服务端发送的数据包，那么将发送给所有客户端
+发送者为客户端：
+
+- 客户端只能发送给服务端，所以有没有指定都是一样的。<font color='DarkGray'>但为了Debug可以设置成自己的Id</font>
+
+发送者为服务端：
+
+- 未指定`TargetConnection `：发送给所有客户端
+- 指定`TargetConnection `：发送给指定的客户端
 
 #### 接受数据模版
 
 ```C#
+// 捕获unity转换成ReceiveRpcCommandRequest的实体
 foreach (var (levelToLoad, rpcEntity) in 
          SystemAPI.Query<LoadLevelRPC>().WithAll<ReceiveRpcCommandRequest>().WithEntityAccess())
 {
@@ -392,18 +422,24 @@ foreach (var (levelToLoad, rpcEntity) in
 
 传递的枚举TeamType数据一共有三个组件，別搞混了
 
-- 保存在Client World和Server World的`ClientTeamSelect`、`MobaTeam`两个都是`IcompoentData`，是普通组件
-  - `ClientTeamSelect`不会挂载到任何实例化对象上（也就是说不会挂载在Ghost上）。他会就这样永远孤独的漂浮在Client World中，如果想删除它也可以。
-  - `MobaTeam`中数据使用`[GhostField]`修饰了，所以客户端会给对应的Ghost上添加`MobaTeam`组件，并且同步该数据。
-  - 所以我们没有使用`ClientTeamSelect`来当做客户端的队伍，要不然我们还需要额外的精力去同步。
+- 保存在Client World和Server World的`ClientTeamSelect`、`MobaTeam`两个都是`IcompoentData`，是普通组件，不是用来RPC传递数据的
+  > 为什么不直接使用`ClientTeamSelect`（思维整理，可不看）：
+  >
+  > - `ClientTeamSelect`不会挂载到任何实例化对象上（也就是说不会挂载在Ghost上）。他会就这样永远孤独的漂浮在Client World中，如果想删除它也可以。
+  > - `MobaTeam`中数据使用`[GhostField]`修饰了，所以客户端会给对应的Ghost上添加`MobaTeam`组件，并且同步该数据。
+  > - 所以我们没有使用`ClientTeamSelect`来当做客户端的队伍，要不然我们还需要额外的精力去同步。
 - `MobaTeamRequestRPC`是`IRpcCommand`通信用的，可以看做的临时中转站
 
 <img class="half" src="/../images/unity/ECS框架学习笔记/数据传递流程.png"></img>
 
-1. Client World创建了一个数据包
-2. NetCode捕获到到该数据包后删除掉该数据包，并同时在Server World还原这个数据包（只将`SendRpcCommandRequest`改为了`ReceiveRpcCommandRequest`，其他数据完全一样）。这一步骤是NetCode完全自动化完成的
-3. 程序员在Server World手动捕获到系统还原的这个数据包，就成功获取到数据了
+<font color='red'>发送数据步骤：</font>
 
+1. Client World创建一个entity，在上面添加需要传递的数据组件和`SendRpcCommandRequest`组件
+2. NetCode捕获到到该entity后并删掉，同时在Server World还原这个entity（只将`SendRpcCommandRequest`改为了`ReceiveRpcCommandRequest`，其他数据完全一样）。这一步骤是NetCode完全自动化完成的
+3. 程序员在Server World使用`ReceiveRpcCommandRequest`手动捕获系统还原的entity，成功获取到数据
+
+> 扩展测试实验（可不看）：
+>
 > 关于这两个数据包到底是不是同一个Entity的问题：
 > 直接使用代码获取到这两个Entity的`Index`、`Version`、`HashCode`就知道了
 >
@@ -412,19 +448,19 @@ foreach (var (levelToLoad, rpcEntity) in
 > ```c#
 > public void OnUpdate(ref SystemState state)
 > {
->     Entity requestTeamEntity = Entity.Null;
->     // 输出刚创建时的对象信息，以防狸猫换太子
->     Debug.Log($"Send 1 : {requestTeamEntity == Entity.Null} Index: {requestTeamEntity.Index} Version: {requestTeamEntity.Version} HashCode: {requestTeamEntity.GetHashCode()}");
->     var ecb = new EntityCommandBuffer(Allocator.Temp);
->     foreach (Entity pendingNetworkId in pendingNetworkIds)
->     {
->         requestTeamEntity = ecb.CreateEntity();
->         ecb.AddComponent(requestTeamEntity, new MobaTeamRequest() { Value = requestedTeam });
->         ecb.AddComponent(requestTeamEntity, new SendRpcCommandRequest() { TargetConnection = pendingNetworkId });
->     }
+>  Entity requestTeamEntity = Entity.Null;
+>  // 输出刚创建时的对象信息，以防狸猫换太子
+>  Debug.Log($"Send 1 : {requestTeamEntity == Entity.Null} Index: {requestTeamEntity.Index} Version: {requestTeamEntity.Version} HashCode: {requestTeamEntity.GetHashCode()}");
+>  var ecb = new EntityCommandBuffer(Allocator.Temp);
+>  foreach (Entity pendingNetworkId in pendingNetworkIds)
+>  {
+>      requestTeamEntity = ecb.CreateEntity();
+>      ecb.AddComponent(requestTeamEntity, new MobaTeamRequest() { Value = requestedTeam });
+>      ecb.AddComponent(requestTeamEntity, new SendRpcCommandRequest() { TargetConnection = pendingNetworkId });
+>  }
 > 
->     ecb.Playback(state.EntityManager);
->     Debug.Log($"Send 1 : {requestTeamEntity == Entity.Null} Index: {requestTeamEntity.Index} Version: {requestTeamEntity.Version} HashCode: {requestTeamEntity.GetHashCode()}");
+>  ecb.Playback(state.EntityManager);
+>  Debug.Log($"Send 1 : {requestTeamEntity == Entity.Null} Index: {requestTeamEntity.Index} Version: {requestTeamEntity.Version} HashCode: {requestTeamEntity.GetHashCode()}");
 > }
 > ```
 >
@@ -630,7 +666,7 @@ ecb.SetComponent(newCharacterEntity, new URPMaterialPropertyBaseColor{ Value = t
 
 - 如果需要频繁的从客户端向服务器发送数据应该使用`ICommandData`而不是`RPC`，`ICommandData`有优化
 
- - <font color='red'>**必须是从客户端发送到服务器**</font>，以控制实体的命令，或是保存状态，如技能CD、伤害等凡是与时间相关的
+ - <font color='red'>**必须是从客户端发送到服务器**</font>，unity会自动将数据发送给服务器。用来控制实体的命令，或是保存状态，如技能CD、伤害等凡是与时间相关的
 - 类似于一个`Dynamic Buffer`动态缓冲器，他将保存最后64`NetWorkTick`的数据
 - 默认情况下不会从服务器复制到所有客户端，需要使用`GhostComponent`属性设置。因为`ICommandData`的工作方式，不建议设置为`SendToOwnerType.SendToOwner`，将被视为错误并并忽略
 
@@ -641,11 +677,16 @@ public struct DamageThisTick : ICommandData{
 }
 ```
 
+> 通过测试发现：
+>
+> - 在计算并发送数据前可以使用`if (state.WorldUnmanaged.IsServer()) continue;`，从而提高服务器性能。当然就算没有使用这个，功能也能照常正常使用
+> - `.AddCommandData()`添加数据后，客户端会得到一组数据，但服务端会得到四十多个数据（但系统其实也只是判断了一次，因为他们都有相同的Tick），但并不影响结果。unity这么做的原因应该是担心服务器没有接受到数据
+
 #### `IInputComponentData`
 
-不需要设置Tick，系统自动完成
+"继承"`IComponentData`，且不需要设置Tick，系统自动完成
 
-`InputEvent`是存储在`IInputComponentData`中的输入事件。服务器一般为 60帧，如果客户端为120帧，服务器很有可能检测不到玩家的输入，`InputEvent`针对这个问题进行的优化。
+`InputEvent`是存储在`IInputComponentData`中的输入事件，一般用来传递按钮事件。服务器一般为 60帧，如果客户端为120帧，服务器很有可能检测不到玩家的输入，`InputEvent`针对这个问题进行的优化。
 
 
 
@@ -747,6 +788,67 @@ public partial class AbilityInputSystem : SystemBase
 >
 > - 因为结构体是值类型，所以在`OnUpdate`执行完后会直接释放掉，不涉及垃圾回收（也就是GC）
 > - 由于栈的分配效率非常高效，即使`OnUpdate`每帧都在调用，数据量不大的话也不会对性能有影响
+
+
+
+---
+
+### 射线碰撞检测
+
+```c#
+private void OnSelectMovePosition()
+{
+	var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;	// 获取物理系统
+    var cameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
+    var mainCamera = EntityManager.GetComponentObject<MainCamera>(cameraEntity).Value;		// 获取相机位置
+
+    var mousePosition = Input.mousePosition;        // 屏幕像素坐标
+    mousePosition.z = 100f;         // 屏幕坐标的Z表示屏幕距离，100表示屏幕前方100米
+    var worldPosition = mainCamera.ScreenToWorldPoint(mousePosition);   // 转换成世界坐标
+    
+    // 设置射线的起点、终点和碰撞规则
+    var selectionInput = new RaycastInput()
+    {
+        Start = mainCamera.transform.position,
+        End = worldPosition,			// BelongTo射线属于第五层  CollidesWith射线将与第一层碰撞
+        Filter = new CollisionFilter() { BelongsTo = 1 << 5, CollidesWith = 1 << 0 };
+    };
+    if (collisionWorld.CastRay(selectionInput, out RaycastHit closestHit))   // 使用Entity的碰撞世界进行射线检测
+    {					// RaycastHit看起来和GameObject的长的一样，但其实不是同一个类。但是用法类似
+        var champEntity = SystemAPI.GetSingletonEntity<OwnerChampTag>();
+        EntityManager.SetComponentData(champEntity, new ChampMoveTargetPosition()
+        {
+            Value = closestHit.Position		// 使用碰撞点
+        });
+    }
+}
+```
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/自定义碰撞.png"></img>
+
+```C#
+// 球形碰撞
+var hits = new NativeList<DistanceHit>(Allocator.TempJob);
+if (CollisionWorld.OverlapSphere(transform.Position, targetRadius.Value, ref hits, CollisionFilter))
+{
+    var closestDistance = float.MaxValue;
+    var closestEntity = Entity.Null;
+    foreach (var hit in hits)
+    {
+        if (hit.Distance < closestDistance)		// 只需要距离玩家最近的目标
+        {
+            closestDistance = hit.Distance;
+            closestEntity = hit.Entity;
+        }
+    }
+    targetEntity.Value = closestEntity;
+}
+hits.Dispose();
+```
+
+
+
+
 
 
 
@@ -1089,6 +1191,10 @@ public partial struct ApplyDamageSystem : ISystem
 }
 ```
 
+
+
+---
+
 ### 技能CD
 
 在释放技能前判断是否达到CD
@@ -1144,9 +1250,10 @@ if (isOnCooldown) continue;
 
 if (输入检测)
 {
-    // (技能释放)...
+    // (技能释放逻辑)...
     
-    if (state.WorldUnmanaged.IsServer()) continue;      // 服务器不做后续处理
+    // ICommandData只用在客户端做处理，unity会自动将数据发送给服务端
+    if (state.WorldUnmanaged.IsServer()) continue;
     var newCooldownTargetTick = currentTick;
     newCooldownTargetTick.Add(aoe.CooldownTicks);
     curTargetTicks.AoeAbility = newCooldownTargetTick;
@@ -1161,17 +1268,188 @@ if (输入检测)
 
 
 
+---
 
+### UI
 
+#### [`ICleanupComponentData`](https://docs.unity3d.com/Packages/com.unity.entities@1.2/manual/components-cleanup.html)
 
+与普通的组件类似，但有一些特殊规则
 
+- 无法烘焙
+- 当你Destroy包含cleanup的entity时，并不会真正的删除他，而是会移除掉他身上所有非cleanup的组件。除非你将cleanup也移除，才能真正的destroy该netity
 
+> 通常用在不同系统的销毁处理上，比如角色和血条他们两并不是父子关系（一个在Entity，一个在GameObject），而是引用关系
+>
+> - 未使用cleanup：在销毁掉角色时并不会销毁掉血条，反而移除掉了血条的引用，使我们无法找到血条的引用
+>
+> - 使用cleanup：在删除掉角色时，血条的组件还是会被保存下来，血条system就可以根据这个引用找到并删除掉血条了
+>
+> <font color='darkgray'>除非我们在删除entity前将血条也删除了，但是这样代码不易维护，并且该entity并不一定有血条</font>
 
+#### 血条系统
 
+##### 组件
 
+```c#
+public struct HealthBarOffset : IComponentData
+{
+    public float3 Value;			// 预设烘焙血条相对entity的位置偏移
+}
+```
 
+##### 烘焙
 
+每个可受伤的角色都烘焙一个位置偏差值
 
+```c#
+public class HealthBarUIReference : ICleanupComponentData		// 无法烘焙
+{	// 注意，因为我们的数据是引用类型，不是值类型，所以组件也只能是class
+    public GameObject Value;		// 保存GameObject世界中的血条的引用
+}
+public class HitPointAuthoring : MonoBehaviour		// 可以和之前的受伤烘焙写在一起
+{
+    public int maxHitPoints;
+    public Vector3 healthBarOffset;
+
+    private class Baker : Baker<HitPointAuthoring>
+    {
+        public override void Bake(HitPointAuthoring authoring)
+        {
+            var entity = GetEntity(TransformUsageFlags.Dynamic);
+            AddComponent(entity, new CurrentHitPoints{Value = authoring.maxHitPoints});
+            AddComponent(entity, new MaxHitPoints{Value = authoring.maxHitPoints});
+            AddComponent<DamageBufferElement>(entity);
+            AddComponent<DamageThisTick>(entity);
+            AddComponent(entity, new HealthBarOffset() { Value = authoring.healthBarOffset });	// 位置偏移
+        }
+    }
+}
+```
+
+直接在场景创建一个单例，保存血条预制体，方便我们创建血条
+
+```C#
+public class UIPrefabs : IComponentData
+{	// 注意，因为我们的数据是引用类型，不是值类型，所以组件也只能是class
+    public GameObject HealthBar;		// 保存预制体，方便我们创建血条
+}
+
+public GameObject healthBarPrefab;
+
+private class Baker : Baker<MobaPrefabsAuthoring>
+{
+    public override void Bake(MobaPrefabsAuthoring authoring)
+    {
+        var prefabContainerEntity = GetEntity(TransformUsageFlags.None);
+        AddComponentObject(prefabContainerEntity, new UIPrefabs()		// 注意：这里使用的是AddComponentObject
+        {
+            HealthBar = authoring.healthBarPrefab
+        });
+    }
+}
+```
+
+- `HealthBarUIReference`：场景中每个可受伤的entity都有用一个该组件
+- `UIPrefabs`：该组件整个场景中只有一个，保存UI的预制体方便创建UI
+
+##### 系统
+
+```C#
+[UpdateAfter(typeof(TransformSystemGroup))]   		// 在玩家移动后的进行位置设置
+[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+public partial struct HealthBarSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+        var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
+
+        // 添加血条
+        foreach (var (transform, healthBarOffset, maxHitPoints, entity) in SystemAPI.Query<LocalTransform, HealthBarOffset, MaxHitPoints>()
+                     .WithNone<HealthBarUIReference>().WithEntityAccess())
+        {
+            // 使用ManagedAPI可以获取到class组件
+            var healthBarPrefab = SystemAPI.ManagedAPI.GetSingleton<UIPrefabs>().HealthBar;
+            var spawnPosition = transform.Position + healthBarOffset.Value;
+            // Object.Instantiate是创造在GameObject中，而不是Entity中
+            var newHealthBar = Object.Instantiate(healthBarPrefab, spawnPosition, quaternion.identity);
+            SetHealthBar(newHealthBar, maxHitPoints.Value, maxHitPoints.Value);
+            // 将生成的血条的引用添加到Entity上，注意：这里添加的并不是本身而是引用。
+            // 也就是说在摧毁掉entity的时候并不会将血条也摧毁掉
+            ecb.AddComponent(entity, new HealthBarUIReference() { Value = newHealthBar });
+        }
+
+        // 更新血条的位置和值
+        foreach (var (transform, healthBarOffset, currentHitPoints, maxHitPoints, healthBarUI) in SystemAPI
+                     .Query<LocalTransform, HealthBarOffset, CurrentHitPoints, MaxHitPoints, HealthBarUIReference>())
+        {
+            var healthBarPosition = transform.Position + healthBarOffset.Value;
+            healthBarUI.Value.transform.position = healthBarPosition;
+            SetHealthBar(healthBarUI.Value, currentHitPoints.Value, maxHitPoints.Value);
+        }
+
+        // 当角色死亡时，移除血条。HealthBarUIReference是cleanup类型，在销毁玩家时，该组件会被保留下来
+        foreach (var (healthBarUI, entity) in SystemAPI.Query<HealthBarUIReference>()
+                 .WithNone<LocalTransform>().WithEntityAccess())
+        {
+            Object.Destroy(healthBarUI.Value);
+            ecb.RemoveComponent<HealthBarUIReference>(entity);
+        }
+    }
+	// 设置血条进度
+    private void SetHealthBar(GameObject healthBarCanvasObject, int curHitPoints, int maxHitPoints)
+    {
+        var healthBarSlider = healthBarCanvasObject.GetComponentInChildren<Slider>();
+        healthBarSlider.minValue = 0;
+        healthBarSlider.maxValue = maxHitPoints;
+        healthBarSlider.value = curHitPoints;
+    }
+}
+```
+
+#### 技能冷却
+
+使用单例控制图标的进度，这里就展示代码了
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/CD进度条.gif"></img>
+
+```c#
+[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+public partial struct AbilityCooldownUISystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+        var abilityCooldownUIController = AbilityCooldownUIController.Instance;	// UI控制单例
+
+        foreach (var (cooldownTargetTicks, abilityCooldownTicks) in SystemAPI
+                     .Query<DynamicBuffer<AbilityCooldownTargetTicks>, AbilityCooldownTicks>())
+        {
+            // 如果是第一次释放技能
+            if (!cooldownTargetTicks.GetDataAtTick(currentTick, out var curTargetTicks))
+            {
+                curTargetTicks.AoeAbility = NetworkTick.Invalid;
+                curTargetTicks.SkillShotAbility = NetworkTick.Invalid;
+            }
+
+            // Q技能
+            if (curTargetTicks.AoeAbility == NetworkTick.Invalid ||         // 未获取到即没有释放过技能
+                currentTick.IsNewerThan(curTargetTicks.AoeAbility))         // 当前帧大于目标帧
+            {
+                abilityCooldownUIController.UpdateAoeMask(0f);		// 使用单例中的方法更新Image.fillAmount的值
+            }
+            else
+            {													// TickIndexForValidTick能使计算更准确
+                var aoeRemainTickCount = curTargetTicks.AoeAbility.TickIndexForValidTick -
+                                         currentTick.TickIndexForValidTick;
+                var fillAmount = (float)aoeRemainTickCount / abilityCooldownTicks.AoeAbility;
+                abilityCooldownUIController.UpdateAoeMask(fillAmount);
+            }
+        }
+    }
+}
+```
 
 
 

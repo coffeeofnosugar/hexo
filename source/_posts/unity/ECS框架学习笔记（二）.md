@@ -23,8 +23,11 @@ tags:
 ### 实用接口
 
 ```C#
-SystemAPI.HasComponent<ChampTag>(entity)；									//判断entitiy是否拥有某组件
-var newtworkId = SystemAPI.GetComponent<GhostOwner>(entity).NetwordId;		// 直接获取entity上的组件
+Entity entity = SystemAPI.GetSingletonEntity<PlayerTag>();						 // 获取实体
+bool has = SystemAPI.HasComponent<ChampTag>(entity)；							// 判断entitiy是否拥有某组件
+GhostOwner newtworkId = SystemAPI.GetComponent<GhostOwner>(entity).NetwordId;	// 直接获取entity上的组件
+bool entityExists = EntityManager.Exists(entity);								// 判断实体是否存在有效
+bool has = SystemAPI.HasSingleton<GamePlayingTag>()							// 判断整个场景中是否有组件，几个无所谓
 ```
 
 
@@ -37,13 +40,16 @@ var newtworkId = SystemAPI.GetComponent<GhostOwner>(entity).NetwordId;		// 直�
 
 ### 技巧
 
-#### 存储单例
+#### 单例
+
+##### 保存单例的引用
 
 如果确定整个场景只有确定个数的实体，并且数量也不会改变，那么可以直接在`OnStartRunning`直接获取到该实体并保存
 
-经测试确实可行
+<font color='red'>该方法只适合SystemBase。如果想在Isystem的OnCreate中保存单例，后续使用该组件的时候会报错，提示引用丢失</font>
 
 ```C#
+// 实验组——存储单例
 public partial class PlayerMoveSystem_______ : SystemBase
 {
     private Entity playerEntity;
@@ -78,13 +84,10 @@ public partial class PlayerMoveSystem_______ : SystemBase
 ```
 
 ```C#
+// 对照组——直接查找对象
 [UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct PlayerMoveSystem : ISystem
 {
-    public void OnCreate(ref SystemState state)
-    {
-        state.RequireForUpdate<BeginInitializationEntityCommandBufferSystem.Singleton>();
-    }
     public void OnUpdate(ref SystemState state)
     {
         var deltaTime = SystemAPI.Time.DeltaTime;
@@ -105,9 +108,22 @@ public partial struct PlayerMoveSystem : ISystem
 }
 ```
 
-<img class="half" src="/../images/unity/ECS框架学习笔记/存储实体.png"></img>
+以上两种方式的性能测试结果：
 
-> 使用job与直接foreach的性能一样，这里就不贴图了
+<img class="half" src="/../images/unity/ECS框架学习笔记/存储单例.png"></img>
+
+##### 设置单例属性
+
+在确定一个组件为单例时，可以使用`SystemAPI.SetSingleton(IComponentData)`保存该组件的值
+
+> - 该组件必须没有实现`IEnableableComponent`或`EntityQuery.SetSingleton{T}`
+> - 无法在`Entities.ForEach`、`IJobEntity`、`Utility methods`或`Aspects`中使用
+
+```c#
+var gamePropertyEntity = SystemAPI.GetSingletonEntity<GameStartProperties>();
+var teamPlayerCounter = SystemAPI.GetComponent<TeamPlayerCounter>(gamePropertyEntity);
+SystemAPI.SetSingleton(teamPlayerCounter);		// 设置该组件的值
+```
 
 
 
@@ -187,7 +203,133 @@ foreach (var (_, entity) in SystemAPI.Query<NewEnemyTag>().WithEntityAccess())
 {
     ecb.RemoveComponent<NewEnemyTag>(entity);
 }
-ecb.Playback(state.EntityManager);
+ecb.Playback(state.EntityManager);			// 手动创建的ecb需要手动触发
+```
+
+#### 使创建的方法能使用SystemAPI接口
+
+```C#
+public void OnUpdate(ref SystemState state)
+{
+    SpawnOnEachLane(ref state);
+}
+private void SpawnOnEachLane(ref SystemState state)		// 如果没有传入state，就无法使用SystemAPI的接口
+{
+	var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+}
+```
+
+#### 一个组件烘焙多次
+
+一个实体上只能拥有一个同名的组件，如果一个组件需要挂载多次，可以使用`CreateAdditionalEntity`创建一个额外的实体
+
+```C#
+public Vector3[] TopLanePath;
+public Vector3[] MidLanePath;
+public Vector3[] BotLanePath;
+
+public override void Bake(MinionPathAuthoring authoring)
+{
+    var entity = GetEntity(TransformUsageFlags.None);		// 创建本身
+    // 添加
+    var topLane = CreateAdditionalEntity(TransformUsageFlags.None, false, "TopLane");
+    var midLane = CreateAdditionalEntity(TransformUsageFlags.None, false, "MidLane");
+    var botLane = CreateAdditionalEntity(TransformUsageFlags.None, false, "BotLane");
+    var topLanePath = AddBuffer<MinionPathPosition>(topLane);
+    var midLanePath = AddBuffer<MinionPathPosition>(midLane);
+    var botLanePath = AddBuffer<MinionPathPosition>(botLane);
+}
+```
+
+#### 灵活使用关键字`WithAny`捕获
+
+`WithAny`只要有一个符合就捕获
+
+```c#
+// 捕获拥有碰撞物理，且有队伍的实体					// 既可以是英雄，也可以是小兵
+SystemAPI.Query<RefRW<PhysicsMass>, MobaTeam>().WithAny<NewChampTag, NewMinionTag>()；
+```
+
+
+
+
+
+
+
+
+
+---
+
+### 关于Tick和`IsFirstTimeFullyPredictingTick`
+
+参考[Full vs. Partial Ticks ](https://discussions.unity.com/t/full-vs-partial-ticks/941512)
+
+- <font color='red'>**Tick是固定一秒60次，并不是update执行的次数**</font>。由于服务器没反应过来，服务器update的次数一般都会比Tick次数少，客户端反应比较快一半会比60大。
+
+  - 服务端会将数据以Tick的频率发送给客户端，而客户端会平滑的设置其数值，有如下两种情景
+
+    - 数值：服务端告诉客户端第20Tick`Value = 10`，那么客户端在19Tick（假设`Value=0`）与20Tick之间会**多次执行**update，让Value从0平滑的到达10。假如客户端一个Tick可以运行10次，那么value第一次update为0，第二次update为1，第三次update为3....直到完整的到达第20Tick，Value就等于10了。
+
+    - 事件：服务端告诉客户端第20Tick的时候创建一个小兵，那么在19Tick与20Tick之间，每次update都会创建一个小兵
+
+      这时就需要用到`IsFirstTimeFullyPredictingTick`了，在19到20Tick之间update`IsFirstTimeFullyPredictingTick`返回false；当你真正达到20Tick，`IsFirstTimeFullyPredictingTick`返回True，表示这是第一次完整的预测Tick
+
+    假设有代码如下：
+
+    ```C#
+    // [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]	system在模拟组中
+    
+    var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+    if (networkTime.IsFirstTimeFullyPredictingTick)
+    {
+        ecb.生成小兵();				// 只有在20Tick的时候才会执行
+    }
+    Value = 10;			// 在18到20Tick之间，客户端每次update都将让Value更接近10
+    					// 虽然这里写的是直接赋值，但客户端并不会生硬的将Value设置为10
+    ```
+
+    <img class="half" src="/../images/unity/ECS框架学习笔记/IsFirstTimeFullyPredictingTick用法.png"></img>
+
+  {% grouppicture 2-2 %}
+
+  <img class="half" src="/../images/unity/ECS框架学习笔记/服务端Tick与Update.png"></img>
+
+  <img class="half" src="/../images/unity/ECS框架学习笔记/客户端Tick与Update.png"></img>
+
+  {% endgrouppicture %}
+
+- 服务端与客户端的Tick并不同步。这应该就是延迟的由来？
+
+  {% grouppicture 2-2 %}
+
+  <img class="half" src="/../images/unity/ECS框架学习笔记/服务端Tick.png"></img>
+
+  <img class="half" src="/../images/unity/ECS框架学习笔记/客户端Tick.png"></img>
+
+  {% endgrouppicture %}
+
+测试代码：
+
+```c#
+public partial struct TestSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        var isServer = state.WorldUnmanaged.IsServer();
+        if (isServer)
+        {
+        	var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            Debug.Log($"Server: Tick: {networkTime.ServerTick}, ElapsedTime: {SystemAPI.Time.ElapsedTime}");
+            Debug.Log("Server: Update time");
+        }
+        else
+        {
+        	var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            Debug.Log($"Client: Tick: {networkTime.ServerTick}, ElapsedTime: {SystemAPI.Time.ElapsedTime}");
+            Debug.Log("Client: Update time");
+        }
+    }
+}
 ```
 
 
@@ -398,7 +540,7 @@ public partial struct EnemyMoveSystem : ISystem
 
 
 
-
+---
 
 #### `InvalidOperationException: 'EntityCommandBuffer' is not declared [ReadOnly] in a IJobParallelFor job. The container does not support parallel writing. Please use a more suitable container type.`
 
@@ -465,4 +607,30 @@ private void Execute(EnemyMoveAspect enemy, [ChunkIndexInQuery]int sortKey)	// �
 > 因为索引值是确定且稳定的，所以在使用 `EntityCommandBuffer`（ECB）时，可以保证对实体的操作是可预测和一致的（例如，记录、重放命令时不受并行或调度的影响）。
 
 
+
+---
+
+#### `'MultiplayerDOTS.NpcAttackSystem' creates a Lookup object (e.g. ComponentLookup) during OnUpdate. Please create this object in OnCreate instead and use type `_MyLookup.Update(ref systemState);` in OnUpdate to keep it up to date instead. This is significantly faster.`
+
+##### 原因
+
+在使用了错误的API
+
+##### 错误代码
+
+```C#
+state.Dependency = new NpcAttackJob()
+{
+    TransformLookup = state.GetComponentLookup<LocalTransform>(true),
+}.ScheduleParallel(state.Dependency);
+```
+
+##### 解决方法
+
+```C#
+state.Dependency = new NpcAttackJob()
+{
+    TransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true),
+}.ScheduleParallel(state.Dependency);
+```
 
