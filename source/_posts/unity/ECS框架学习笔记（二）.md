@@ -270,10 +270,46 @@ SystemAPI.Query<RefRW<PhysicsMass>, MobaTeam>().WithAny<NewChampTag, NewMinionTa
 
 但是在Entity中，事件的触发分为如下步骤
 
-1. 准备：创建一个预制体，单独给这个预制体准备一个标签如`GameOverTag`。不能直接将该预制体放置在Entities场景中，而是存储其引用。具体做法查看本篇文章下方的[Entities => GameObject](#Entities => GameObject)
-1. 
+1. 准备：
+   - 创建一个预制体，单独给这个预制体准备一个标签如`GameOverTag`，并保存该对该预制体的引用。不能直接将该预制体放置在Entities场景中，而是存储其引用。
+   - 创建一个监听系统，如`GameOverSystem`，一直捕获或者使用`RequireForUpdate<GameOverTag>();`执行逻辑
+2. 在你需要触发该事件的时候，比如在DestroySystem中检测到被摧毁的entity是基地，那么就将创建准备好的entity
+3. `GameOverSystem`监听到场景中存在`GameOverTag`标签后，执行`GameOverSystem`逻辑
 
-
+> 创建预制体详细流程：
+>
+> {% grouppicture 2-2 %}
+>
+> <img class="half" src="/../images/unity/ECS框架学习笔记/事件-1.png"></img>
+>
+> <img class="half" src="/../images/unity/ECS框架学习笔记/事件-2.png"></img>
+>
+> {% endgrouppicture %}
+>
+> 与[Entities => GameObject](#Entities => GameObject)不同，我们需要创建的是Entity，所以我们要存储的是Entity类型
+>
+> ```C#
+> public struct MobaPrefabs : IComponentData		// 是结构体，而不是class
+> {
+>     public Entity GameOverEntity;				// 以Entity的形式保存下来
+> }
+> public class MobaPrefabsAuthoring : MonoBehaviour
+> {
+>     public GameObject GameOverEntity;		// 在Inspector窗口上引入预制体
+>     private class Baker : Baker<MobaPrefabsAuthoring>
+>     {
+>         public override void Bake(MobaPrefabsAuthoring authoring)
+>         {
+>             var prefabContainerEntity = GetEntity(TransformUsageFlags.None);
+> 
+>             AddComponent(prefabContainerEntity, new MobaPrefabs()
+>             {		// 烘焙该Entity
+>                 GameOverEntity = GetEntity(authoring.GameOverEntity, TransformUsageFlags.None),
+>             });
+>         }
+>     }
+> }
+> ```
 
 
 
