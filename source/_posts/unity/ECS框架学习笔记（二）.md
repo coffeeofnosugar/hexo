@@ -336,6 +336,84 @@ public partial struct TestSystem : ISystem
 
 
 
+---
+
+### GameObject与Entities世界交互
+
+#### GameObject => Entities
+
+系统：
+
+```C#
+// 判断Default World中 PlayerMoveSystem 系统是否存在
+ClientStartGameSystem startGameSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<ClientStartGameSystem>();
+// 直接使用系统中的公开属性
+startGameSystem.OnUpdatePlayersRemainingToStart -= UpdatePlayerRemainingText;
+```
+
+实体：
+
+```C#
+// 创建实体
+Entity entity = World.DefaultGameObjectInjectionWorld.EntityManager.CreateEntity();
+// 添加组件
+World.DefaultGameObjectInjectionWorld.EntityManager.AddComponentData(teamRequestEntity, new ClientTeamSelect(){ Value = team });
+```
+
+```C#
+// 捕获EntityQuery
+EntityQuery playerTagEntityQuery = World.DefaultGameObjectInjectionWorld.EntityManager
+    .CreateEntityQuery(typeof(PlayerTag));	// 只读
+EntityQuery networkDriverQuery = World.DefaultGameObjectInjectionWorld.EntityManager
+    .CreateEntityQuery(ComponentType.ReadWrite<NetworkStreamDriver>());	// 读写
+// 保存捕获到的Entity
+NativeArray<Entity> entityNativeArray = networkDriverQuery.ToEntityArray(Allocator.Temp);
+// 修改组件
+networkDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.Listen(serverEndpoint);
+```
+
+
+
+> 如果使用了NetCode包，在创建Client World时，需要将Default World设置为Cilient World
+>
+> ```C#
+> // 创建Client World
+> var clientWorld = ClientServerBootstrap.CreateClientWorld("Coffee Client World");
+> // 将Default World 设置为 Cilient World
+> World.DefaultGameObjectInjectionWorld = clientWorld;
+> ```
+
+
+
+#### Entities => GameObject
+
+方法一：单例，比较简单，就不说了
+
+方法二：创建GameObject时保存对其的引用，方法如下
+
+```C#
+public class HealthBarUIReference : ICleanupComponentData		// 注意这里使用的是class而不是结构体
+{
+    public GameObject Value;
+}
+// 创建GameObject
+var newHealthBar = Object.Instantiate(healthBarPrefab, spawnPosition, quaternion.identity);
+// 将GameObject的引用保存在组件上
+ecb.AddComponent(entity, new HealthBarUIReference() { Value = newHealthBar });
+// 获取该组件并使用
+foreach(var obj in SystemAPI.Query<HealthBarUIReference>())
+{
+    obj.Value.transform = new Vector3(1f, 0f, 0f);		// 改变位置坐标
+    Slider slider = obj.GetComponentInChildren<Slider>(); // 获取子物体的UI。能获取到组件，那么就很灵活了
+}
+```
+
+> 由于烘焙的时候只能挂载预制体，所以entities无法直接引用到GameObject中的物体
+
+
+
+
+
 
 
 ---

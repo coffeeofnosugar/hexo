@@ -1453,3 +1453,19 @@ public partial struct AbilityCooldownUISystem : ISystem
 
 
 
+---
+
+### 退出服务器
+
+在客户端或者GameObject世界执行如下操作
+
+1. 获取到`NetworkStreamConnection`实体，并添加`NetworkStreamRequestDisconnect`组件
+2. 销毁世界，并加载其他场景
+
+```C#
+var networkConnection = SystemAPI.GetSingletonEntity<NetworkStreamConnection>();
+SystemAPI.GetComponent<NetworkStreamRequestDisconnect>(networkConnection);
+World.DisposeAllWorlds();		// 不要用在服务端了
+SceneManager.LoadScene(0);
+```
+
