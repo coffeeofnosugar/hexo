@@ -34,8 +34,6 @@ bool has = SystemAPI.HasSingleton<GamePlayingTag>()							// 判断整个场景�
 
 
 
-
-
 ---
 
 ### 技巧
@@ -206,6 +204,22 @@ foreach (var (_, entity) in SystemAPI.Query<NewEnemyTag>().WithEntityAccess())
 ecb.Playback(state.EntityManager);			// 手动创建的ecb需要手动触发
 ```
 
+
+#### 销毁实体
+
+##### SystemBase
+
+```C#
+EntityManager.DestroyEntity(gamePlayingEntity);
+```
+
+##### ISystem
+
+```C#
+var ecb = new EntityCommandBuffer(Allocator.Temp);
+ecb.DestroyEntity(requestEntity);
+```
+
 #### 使创建的方法能使用SystemAPI接口
 
 ```C#
@@ -250,7 +264,14 @@ public override void Bake(MinionPathAuthoring authoring)
 SystemAPI.Query<RefRW<PhysicsMass>, MobaTeam>().WithAny<NewChampTag, NewMinionTag>()；
 ```
 
+#### 事件
 
+在GameObject中，事件是使用代码写Action来触发
+
+但是在Entity中，事件的触发分为如下步骤
+
+1. 准备：创建一个预制体，单独给这个预制体准备一个标签如`GameOverTag`。不能直接将该预制体放置在Entities场景中，而是存储其引用。具体做法查看本篇文章下方的[Entities => GameObject](#Entities => GameObject)
+1. 
 
 
 
@@ -482,6 +503,16 @@ foreach(var obj in SystemAPI.Query<HealthBarUIReference>())
 >    `BlobAssetReference` 存储的是指向连续内存块的指针
 >    多个实体可以共享一个`BlobArray`，而不需要为每个实体分配内存
 > 2. `IComponentData`是可更改的，每次修改组件都可能会导致内存重新分配和复制，对于不可变数据来说不必要
+
+
+
+
+
+
+
+
+
+
 
 
 
