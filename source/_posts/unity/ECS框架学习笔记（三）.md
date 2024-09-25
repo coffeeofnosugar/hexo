@@ -111,6 +111,10 @@ public struct ClientTeamSelect : IComponentData
 }
 ```
 
+创建客户端的同时向客户端世界中注入`ClientTeamSelect`组件，表面自己选择的队伍
+
+再由`ClientRequestGameEntrySystem`，捕获进行下一步处理
+
 ```C#
 private void StartClient()
 {
@@ -354,8 +358,6 @@ public partial struct ServerProcessGameEntryRequestSystem : ISystem
 >   - 如果该客户端退出游戏或断线，就摧毁掉该一切与它有关的事物
 >   - 如果重连，就重新创建列表的物体（感觉应该可以控制哪些是要生成的，哪些是不需要的？）
 >
->
-> <img class="half" src="/../images/unity/ECS框架学习笔记/服务端.png"></img>
 
 
 
@@ -514,7 +516,7 @@ foreach (var (levelToLoad, rpcEntity) in
 
 - ` Importance`：数据优先级，数值越大越优先发送
 - `SupportedGhostModes`：幽灵支持的模式，选择适合的模式能提供更好的优化，运行时无法更改此值
-- [`DefaultGhostMode`](https://docs.unity3d.com/Packages/com.unity.netcode@1.3/api/Unity.NetCode.GhostMode.html)：模拟模式
+- [`DefaultGhostMode`](https://docs.unity3d.com/Packages/com.unity.netcode@1.3/api/Unity.NetCode.GhostMode.html)：幽灵同步模式
   - `Interpolated`：轻量级，不在客户端上执行模拟。但他们的值是从最近几个快照的插值，此模式时间轴要慢于服务器。<font color='DarkGray'>与玩家关联不大的，如防御塔、小兵、水晶基地等。</font>
   - `Predicted`：完全由客户端预测。这种预测既昂贵又不权威，但它确实允许预测的幽灵更准确地与物理交互，并且它确实将他们的时间轴与当前客户端对齐。<font color='DarkGray'>与玩家交互强相关的才需要设置成这个，如英雄，飞行道具等。</font>
   - `OwnerPredicted`：由`Ghost Owner`（即服务端）预测，并且还会差值其他的客户端。<font color='DarkGray'>是上面两个模式的折中方案。</font>
@@ -523,6 +525,37 @@ foreach (var (levelToLoad, rpcEntity) in
   - `Static`：优化不经常改变的Ghosts。节省带宽，但是需要额外的CPU周期来执行检查是否有数据更改，如果更改了就发送数据给服务器。如果设置不对给经常改变的Ghost了，将增加带宽和cpu成本
 - `HasOwner`：控制权是否是在玩家手上的，必须指定`NetwordId`的值
 - `SupportAutoCommandTarget`：勾选后将标记为`[GhostField]`的数据自动生成缓冲数据发送给服务器
+
+#### 预测组
+
+凡是涉及到数值，并且与玩家、战斗强相关的system都需要预测，使数据更平滑，而不是一个梯度一个梯度的更改数值。
+
+<font color='darkgray'>关于"平滑"指的是什么可以参考第二篇文章的Tick的讲解</font>
+
+使用[UpdateInGroup(typeof(PredictedSimulationSystemGroup))]属性，表示该system运行在模拟组内，该组客户端和服务端都会运行。
+
+> <font color='red'>注意：</font>
+>
+> 放置在该组后，system处理的entity如果是设置了Ghost的阈值体，那么`DefaultGhostMode`必须设置成`Predicted`。不然会出现很奇怪的BUG：虽然在systems、inspector窗口上该entitiy没有任何问题，但是客户端的所有system都只能在游戏开始的短暂一瞬间（13个update左右）捕获到该entity
+>
+> ```C#
+> [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+> public partial class RespawnChampSystem : SystemBase
+> {
+>     protected override void OnUpdate()
+>     {
+>         foreach (var respawnBuffer in SystemAPI
+>                  .Query<DynamicBuffer<RespawnBufferElement>>().WithAll<RespawnTickCount, Simulate>())
+>         {
+>             Debug.Log($"{(isServer? "Server" : "Client")}, 成功捕获到物体");
+>         }
+>     }
+> }
+> ```
+>
+> ~~如果将`DefaultGhostMode`必须设置成`Interpolated`就会像下方这样出现很奇怪的BUG~~
+>
+> <img class="half" src="/../images/unity/ECS框架学习笔记/奇怪BUG-1.png"></img>
 
 #### 组件
 
@@ -1468,4 +1501,124 @@ SystemAPI.GetComponent<NetworkStreamRequestDisconnect>(networkConnection);
 World.DisposeAllWorlds();		// 不要用在服务端了
 SceneManager.LoadScene(0);
 ```
+
+
+
+---
+
+### 虚拟客户端
+
+#### 创建
+
+- `[WorldSystemFilter(WorldSystemFilterFlags.ThinClientSimulation)]`：只在虚拟客户端运行。如创建一个英雄、设置`CommandTarget`连接
+
+- `[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]`：虚拟客户端和普通客户端都要运行。如英雄初始化（设置英雄标签、移动目标位置为自身脚下）
+
+1. 虚拟客户端创建假人，并表名自己选择的队伍，只需要最低限度的添加需要的组件。这一步类似[客户端：](#客户端：)
+
+   ```C#
+   
+       [WorldSystemFilter(WorldSystemFilterFlags.ThinClientSimulation)]
+       public partial struct ThinClientEntrySystem : ISystem
+       {
+           public void OnUpdate(ref SystemState state)
+           {
+               state.Enabled = false;		// 只需要创建一次
+               var thinClientDummy = state.EntityManager.CreateEntity();	// 创建一个假人entity
+               // 添加移动组件 "ChampMoveSystem" 需要使用
+               state.EntityManager.AddComponent<ChampMoveTargetPosition>(thinClientDummy);
+               // 在移动组件中添加一个数据，告诉假人要移动到哪里
+               state.EntityManager.AddBuffer<InputBufferData<ChampMoveTargetPosition>>(thinClientDummy);
+               
+               // 随机选择一个队伍，再由"ClientRequestGameEntrySystem"捕获，向服务器发送进入游戏请求
+               var thinClientRequestEntity = state.EntityManager.CreateEntity();
+               state.EntityManager.AddComponentData(thinClientRequestEntity, new ClientTeamSelect
+               {
+                   Value = TeamType.AutoAssign
+               });
+           }
+       }
+   ```
+
+2. 客户端向服务器发送进入游戏请求，这一步普通客户端和虚拟客户端都需要使用，详情见[客户端向服务器发送进入游戏请求](#客户端向服务器发送进入游戏请求)
+
+3. 服务端在接收到请求并创建服务端实体，这一步是服务器完成的
+
+如此一来，就能在场景中生成虚拟客户端了
+
+{% grouppicture 2-2 %}
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/虚拟客户端-1.png"></img>
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/虚拟客户端-2.png"></img>
+
+{% endgrouppicture %}
+
+#### 控制
+
+在测试的时候发现，我们修改了虚拟客户端的`ChampMoveTargetPosition`，但是并不起作用（因为修改的内容并没有传递给服务器）。如何能一直控制他们移动呢，unity为我们在NetworkConnection上准备了`CommandTarget`组件。
+
+1. 在[创建](#创建)第一步创建假人的最后设置`CommandTarget`组件，并添加移动用的组件
+
+   ```C#
+   public struct ThinClientInputProperties : IComponentData
+   {
+       public Random Random;       // 移动随机数
+       public float Timer;         // 移动计时器
+       public float MinTimer;      // 停留的最小时间
+       public float MaxTimer;      // 停留的最大时间
+       public float3 MinPosition;  // 移动的最小范围
+       public float3 MaxPosition;  // 移动的最大范围
+   }
+   ```
+
+   ```C#
+   var connectionEntity = SystemAPI.GetSingletonEntity<NetworkId>();       // 获取连接id
+   // 设置命令目标
+   SystemAPI.SetComponent(connectionEntity, new CommandTarget { targetEntity = thinClientDummy });
+   
+   var connectionId = SystemAPI.GetSingleton<NetworkId>().Value;
+   // 添加GhostOwner
+   state.EntityManager.AddComponentData(thinClientDummy, new GhostOwner { NetworkId = connectionId });
+   
+   state.EntityManager.AddComponentData(thinClientDummy, new ThinClientInputProperties
+   {
+       Random = Random.CreateFromIndex((uint)connectionId),
+       Timer = 0f,
+       MinTimer = 1f,
+       MaxTimer = 10f,
+       MinPosition = new float3(-50f, 0f, -50f),
+       MaxPosition = new float3(50f, 0f, 50f)
+   });
+   ```
+
+2. 在第三步的时候将服务器这边虚拟客户端控制的英雄实体赋给他自己的NetworkConnection的CommandTarget上
+
+   ```C#
+   // ... 创建服务端英雄实体
+   ecb.SetComponent(requestSource.SourceConnection, new CommandTarget { targetEntity = newChamp });
+   // ...验证是否满足开始游戏条件
+   ```
+
+   
+
+
+
+{% grouppicture 2-2 %}
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/虚拟客户端-3.png"></img>
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/虚拟客户端-4.png"></img>
+
+{% endgrouppicture %}
+
+
+
+
+
+
+
+
+
+
 
