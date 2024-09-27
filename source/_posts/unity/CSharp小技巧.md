@@ -9,9 +9,32 @@ tags:
 
 标题虽然是小技巧，但本篇文章里还是记录了一些常用的功能，**本文章的主要目的是方便日后快速查找**
 
-## C#
 
-{% note default %}
+
+---
+
+{% note info %}
+
+### 扩展方法
+
+{% endnote %}
+
+```c#
+public static class DotsExtensions
+{
+    public static float3 V2ToF3(this Vector2 v2) => new float3(v2.x, v2.y, 0);
+}
+```
+
+
+
+
+
+
+
+---
+
+{% note info %}
 
 ### `Operator`重载运算符
 
@@ -47,7 +70,9 @@ Console.WriteLine($"cs1 + cs2 = {cs1 + cs2}");		// 运算时自动调用`operato
 
 
 
-{% note default %}
+---
+
+{% note info %}
 
 ### `implicit`隐式类型转换
 
@@ -81,7 +106,9 @@ Console.WriteLine(input);   // 隐式转换 PlayerMoveInput -> float
 
 
 
-{% note default %}
+---
+
+{% note info %}
 
 ### `explicit`显式类型转换
 
@@ -120,7 +147,9 @@ Console.WriteLine((float)input);   // 输出1 显式转换 PlayerMoveInput -> fl
 
 
 
-{% note default %}
+---
+
+{% note info %}
 
 ### 访问权限
 
@@ -200,7 +229,7 @@ class ReadOnlyClass : IInterface						// 创建一个只能读取，不能更改
 
 ---
 
-{% note default %}
+{% note info %}
 
 ### 列表
 
@@ -279,7 +308,7 @@ humanSelector.ToList().ForEach(man => { Console.WriteLine($"{man.Key}, {man.Valu
 
 ---
 
-{% note default %}
+{% note info %}
 
 ### 字段与属性
 
@@ -391,7 +420,7 @@ List<int> numbers = defalut;   // 默认值为null
 
 ---
 
-{% note default %}
+{% note info %}
 
 ### 字符串、数组切片
 
@@ -432,7 +461,7 @@ Console.WriteLine(str[^7..8]);			// "loWor"
 
 ---
 
-{% note default %}
+{% note info %}
 
 ### 简写判断语句
 
@@ -511,7 +540,7 @@ foreach (var j in list.Where(i => i > 3))		// 提一嘴，里的i和j其实是�
 
 ---
 
-{% note default %}
+{% note info %}
 
 ### 格式化字符串
 
@@ -602,18 +631,20 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 
 
 
-## Unity
+---
 
-{% note default %}
+### Unity
 
-### 属性
+{% note info %}
+
+#### 属性
 
 
 {% endnote %}
 
 ##### 序列化
 
-- `SerializeReference`：使Inspector窗口能序列化接口或抽象类，序列化的时候就已经实例化了，可以不需要使用`new()`实例化
+- `SerializeReference`：使用Inspector窗口能序列化接口或抽象类，序列化的时候就已经实例化了，可以不需要使用`new()`实例化
 
 
 
@@ -623,9 +654,9 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 
 ---
 
-{% note default %}
+{% note info %}
 
-### 内置方法
+#### 内置方法
 
 
 {% endnote %}

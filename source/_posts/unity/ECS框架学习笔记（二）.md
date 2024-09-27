@@ -1,5 +1,5 @@
 ---
-title: 【Unity】ECS框架学习笔记（二）——踩坑
+title: 【Unity】ECS框架学习笔记（二）
 date: 2024-09-15 07:11:06
 tags:
   - Unity
@@ -36,11 +36,9 @@ bool has = SystemAPI.HasSingleton<GamePlayingTag>()							// 判断整个场景�
 
 ---
 
-### 技巧
+### 单例
 
-#### 单例
-
-##### 保存单例的引用
+#### 保存单例的引用
 
 如果确定整个场景只有确定个数的实体，并且数量也不会改变，那么可以直接在`OnStartRunning`直接获取到该实体并保存
 
@@ -108,9 +106,9 @@ public partial struct PlayerMoveSystem : ISystem
 
 以上两种方式的性能测试结果：
 
-<img class="half" src="/../images/unity/ECS框架学习笔记/存储单例.png"></img>
+<img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/存储单例.png"></img>
 
-##### 设置单例属性
+#### 设置单例属性
 
 在确定一个组件为单例时，可以使用`SystemAPI.SetSingleton(IComponentData)`保存该组件的值
 
@@ -125,7 +123,9 @@ SystemAPI.SetSingleton(teamPlayerCounter);		// 设置该组件的值
 
 
 
-#### 监控数量
+---
+
+### 监控数量
 
 使用`EntityQuery`监控指定类型的数量
 
@@ -181,7 +181,11 @@ public partial struct ClientRequestGameEntrySystem : ISystem
 var query = SystemAPI.QueryBuilder().WithAll<NewEnemyTag>().Build();
 ```
 
-#### 移除组件
+
+
+---
+
+### 移除组件
 
 v1.2.4貌似添加和删除组件都只能使用缓冲器
 
@@ -202,25 +206,49 @@ foreach (var (_, entity) in SystemAPI.Query<NewEnemyTag>().WithEntityAccess())
     ecb.RemoveComponent<NewEnemyTag>(entity);
 }
 ecb.Playback(state.EntityManager);			// 手动创建的ecb需要手动触发
+ecb.Dispose();
 ```
 
 
-#### 销毁实体
 
-##### SystemBase
+---
+
+### 创建实体
+
+```C#
+var ecb = new EntityCommandBuffer(Allocator.Temp);
+var swordEntity = ecb.Instantiate(_swordSprite);
+ecb.Playback(EntityManager);
+ecb.Dispose();
+```
+
+
+
+
+
+---
+
+### 销毁实体
+
+#### SystemBase
 
 ```C#
 EntityManager.DestroyEntity(gamePlayingEntity);
 ```
 
-##### ISystem
+#### ISystem
 
 ```C#
 var ecb = new EntityCommandBuffer(Allocator.Temp);
 ecb.DestroyEntity(requestEntity);
+ecb.Playback(EntityManager);
 ```
 
-#### 使创建的方法能使用SystemAPI接口
+
+
+---
+
+### 在其他方法中使用SystemAPI接口
 
 ```C#
 public void OnUpdate(ref SystemState state)
@@ -233,7 +261,11 @@ private void SpawnOnEachLane(ref SystemState state)		// 如果没有传入state�
 }
 ```
 
-#### 一个组件烘焙多次
+
+
+---
+
+### 一个组件烘焙多次
 
 一个实体上只能拥有一个同名的组件，如果一个组件需要挂载多次，可以使用`CreateAdditionalEntity`创建一个额外的实体
 
@@ -255,7 +287,11 @@ public override void Bake(MinionPathAuthoring authoring)
 }
 ```
 
-#### 灵活使用关键字`WithAny`捕获
+
+
+---
+
+### 灵活使用关键字`WithAny`捕获
 
 `WithAny`只要有一个符合就捕获
 
@@ -264,7 +300,11 @@ public override void Bake(MinionPathAuthoring authoring)
 SystemAPI.Query<RefRW<PhysicsMass>, MobaTeam>().WithAny<NewChampTag, NewMinionTag>()；
 ```
 
-#### 事件
+
+
+---
+
+### 事件
 
 在GameObject中，事件是使用代码写Action来触发
 
@@ -280,9 +320,9 @@ SystemAPI.Query<RefRW<PhysicsMass>, MobaTeam>().WithAny<NewChampTag, NewMinionTa
 >
 > {% grouppicture 2-2 %}
 >
-> <img class="half" src="/../images/unity/ECS框架学习笔记/事件-1.png"></img>
+> <img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/事件-1.png"></img>
 >
-> <img class="half" src="/../images/unity/ECS框架学习笔记/事件-2.png"></img>
+> <img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/事件-2.png"></img>
 >
 > {% endgrouppicture %}
 >
@@ -310,6 +350,103 @@ SystemAPI.Query<RefRW<PhysicsMass>, MobaTeam>().WithAny<NewChampTag, NewMinionTa
 >     }
 > }
 > ```
+
+
+
+---
+
+### 碰撞
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/自定义碰撞.png"></img>
+
+#### [球形射线](https://docs.unity3d.com/Packages/com.unity.physics@1.3/manual/collision-queries.html)
+
+触发条件：
+
+1. 被检测的物体必须要有`Physics Shape`组件
+2. `Physics Shape`组件的`Collision Filter`的设置必须与射线设定的`Collision Filter`成对应关系
+
+```C#
+CollisionFilter _collisionFilter = new CollisionFilter()
+{
+    BelongsTo = 1 << 4, // 属于第五层Raycasts
+    CollidesWith = 1 << 2 // 与第二层Monsters碰撞
+};
+
+var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;	// 获取物理系统
+var playerEntity = SystemAPI.GetSingletonEntity<PlayerTag>();
+var transform = SystemAPI.GetComponentRO<LocalTransform>(playerEntity);		// 获取玩家位置
+
+var hits = new NativeList<DistanceHit>(Allocator.TempJob);		// 存放击中的物体
+if (collisionWorld.OverlapSphere(transform.ValueRO.Position, 100f, ref hits, _collisionFilter))
+{
+    Debug.Log("hit");
+}
+hits.Dispose();			// 记得释放
+```
+
+
+
+#### [物理碰撞](https://docs.unity3d.com/Packages/com.unity.physics@1.3/manual/simulation-results.html)
+
+两种触发方式：
+
+- `ICollisionEventsJob`：碰撞事件
+- `ITriggerEventsJob`：触发事件，就可以理解成普通的包围盒勾选的Trigger
+
+触发条件：
+
+1. <font color="DarkGray">（与射线一样）</font>被检测的物体必须要有`Physics Shape`组件
+2. <font color="DarkGray">（与射线一样）</font>`Physics Shape`组件的`Collision Filter`的设置必须与射线设定的`Collision Filter`成对应关系
+3. 碰撞的两个物体之中**必须要有一个**物体有`Rigidbody`（必须是3D的，不支持2D的Rigidbody）
+4. 最后一项也是最重要的一项，必须设置`Collision Response`，两个物体分别选择什么会触发哪个事件也标明在图二了
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/PhysicsShape设置-1.png"></img>
+
+<img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/PhysicsShape设置-2.png"></img>
+
+```C#
+[UpdateInGroup(typeof(PhysicsSystemGroup))]			// 必须
+[UpdateAfter(typeof(PhysicsSimulationGroup))]		// 必须
+public partial struct DamageOnTriggerSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        var simulationSingleton = SystemAPI.GetSingleton<SimulationSingleton>();
+		// 执行碰撞事件
+        state.Dependency = new CountNumCollisionEvents
+        {
+				// 可以传递参数
+        }.Schedule(simulationSingleton, state.Dependency);
+        // 执行触发事件，两种写法是一样的，都可以
+        var job = new DamageOnTriggerJob
+        {
+				// 可以传递参数
+        };
+        state.Dependency = job.Schedule(simulationSingleton, state.Dependency);
+    }
+}
+// 碰撞事件
+public struct CountNumCollisionEvents : ICollisionEventsJob
+{
+    public void Execute(CollisionEvent collisionEvent)
+    {
+        Debug.Log($"ICollisionEventsJob");
+    }
+}
+// 触发事件
+public struct DamageOnTriggerJob : ITriggerEventsJob
+{
+    public void Execute(TriggerEvent triggerEvent)
+    {
+        Debug.Log($"ITriggerEventsJob");
+    }
+}
+```
+
+
+
+
 
 
 
@@ -345,13 +482,13 @@ SystemAPI.Query<RefRW<PhysicsMass>, MobaTeam>().WithAny<NewChampTag, NewMinionTa
     					// 虽然这里写的是直接赋值，但客户端并不会生硬的将Value设置为10
     ```
 
-    <img class="half" src="/../images/unity/ECS框架学习笔记/IsFirstTimeFullyPredictingTick用法.png"></img>
+    <img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/IsFirstTimeFullyPredictingTick用法.png"></img>
 
   {% grouppicture 2-2 %}
 
-  <img class="half" src="/../images/unity/ECS框架学习笔记/服务端Tick与Update.png"></img>
+  <img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/服务端Tick与Update.png"></img>
 
-  <img class="half" src="/../images/unity/ECS框架学习笔记/客户端Tick与Update.png"></img>
+  <img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/客户端Tick与Update.png"></img>
 
   {% endgrouppicture %}
 
@@ -359,9 +496,9 @@ SystemAPI.Query<RefRW<PhysicsMass>, MobaTeam>().WithAny<NewChampTag, NewMinionTa
 
   {% grouppicture 2-2 %}
 
-  <img class="half" src="/../images/unity/ECS框架学习笔记/服务端Tick.png"></img>
+  <img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/服务端Tick.png"></img>
 
-  <img class="half" src="/../images/unity/ECS框架学习笔记/客户端Tick.png"></img>
+  <img class="half" src="/../images/unity/ECS框架学习笔记/学习笔记二/客户端Tick.png"></img>
 
   {% endgrouppicture %}
 

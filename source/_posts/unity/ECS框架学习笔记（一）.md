@@ -20,7 +20,7 @@ tags:
 
 可选：
 
-- `com.unity.netcode`：服务器
+- `com.unity.netcode`：网络，多人游戏使用
 
 #### 环境
 
