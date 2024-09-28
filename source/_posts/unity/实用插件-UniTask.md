@@ -1,6 +1,6 @@
 ---
-title: 【Unity】UniTask学习笔记
-date: 2024-07-05 15:32:06
+title: 【Unity】实用插件-UniTask
+date: 2024-09-15 15:32:06
 tags:
   - Unity
 ---
@@ -69,12 +69,12 @@ void start()
 }
 ```
 
-<img class="half" src="/../images/unity/UniTask学习笔记/UniTaskTracker-3.png"></img>
-
 > 正确使用的两种方式：
 >
 > - 使用`await`修饰：后面的代码会等待执行完毕后再执行
 > - 使用`.Forget()`：不会等待，直接执行后面的代码
+
+<img class="half" src="/../images/unity/UniTask学习笔记/UniTaskTracker-3.png"></img>
 
 > Status
 >

@@ -32,6 +32,30 @@ bool has = SystemAPI.HasSingleton<GamePlayingTag>()							// 判断整个场景�
 
 
 
+---
+
+### 注意事项
+
+#### `return`与`continue`
+
+虽然是一个很显而易见且简单的问题，但确实很容易被忽视
+
+在遍历Query的时候如果想要跳过这一Entity的时候不要使用`return`，而是使用`continue`，例如该Entity数据为空，不需要处理
+除非你不再需要遍历后面的其他的Entity，例如想要寻找某个Entity
+
+```C#
+foreach (var damageBuffer in SystemAPI.Query<DynamicBuffer<DamageBufferElement>>())
+{
+    if (damageBuffer.IsEmpty) continue;     // 注意：不能使用return，不然会跳过剩余的Entity
+}
+```
+
+相信在处理大多数Query的时候都是希望跳过这一个Entity，而不是跳过后续所有的Entity。所以在这里提醒自己注意一下这个问题
+
+
+
+
+
 
 
 ---
@@ -560,11 +584,27 @@ EntityQuery playerTagEntityQuery = World.DefaultGameObjectInjectionWorld.EntityM
     .CreateEntityQuery(typeof(PlayerTag));	// 只读
 EntityQuery networkDriverQuery = World.DefaultGameObjectInjectionWorld.EntityManager
     .CreateEntityQuery(ComponentType.ReadWrite<NetworkStreamDriver>());	// 读写
-// 保存捕获到的Entity
+// 保存捕获到的Entities
 NativeArray<Entity> entityNativeArray = networkDriverQuery.ToEntityArray(Allocator.Temp);
 // 修改组件
 networkDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.Listen(serverEndpoint);
 ```
+
+```C#
+_entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+playerEntityQuery = _entityManager.CreateEntityQuery(typeof(PlayerTag));
+// 保存捕获到的Entity
+playerEntity = playerEntityQuery.GetSingletonEntity();	// 只适合确定只有一个Entity的情况
+transform.position = _entityManager.GetComponentData<LocalTransform>(playerEntity).Position;	// 读取组件
+_entityManager.SetComponentData(playerEntity, new MoveSpeed{ Value = 2f });		// 设置组件
+_entityManager.AddComponent<MoveSpeed>(playerEntity);			// 添加组件
+_entityManager.RemoveComponent<MoveSpeed>(playerEntity);			// 删除组件
+
+```
+
+
+
+
 
 
 
