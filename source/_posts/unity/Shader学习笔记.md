@@ -265,7 +265,7 @@ UV坐标是用于映射2D纹理到3D模型的坐标。在3D模型上的每个顶
 
 - input < 0           => output = -1
 - input = 0           => output = 0
-- input > 1           => output = 1
+- input > 0           => output = 1
 
 <img class="half" src="/../images/unity/Shader学习笔记/数学运算符-Sign-1.png"></img>
 

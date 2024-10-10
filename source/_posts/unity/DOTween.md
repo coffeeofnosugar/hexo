@@ -28,6 +28,8 @@ tags:
 
 
 
+---
+
 ### Tweener
 
 #### 控制播放周期
@@ -42,6 +44,8 @@ tags:
 
 - `Play()`：继续播放动画，在实例化`Tweener`的时候就会
 - `Pause()`：暂停动画，使用`Play()`继续播放
+- `PlayForward()`：动画向前播放
+- `PlayBackwards()`：动画向后播放
 - `Restart(bool, float)`：重新开始播放动画；是否忽略Sequence
 - `Kill(bool)`：结束动画；如果为true就**瞬间**完成动画，false停在当前位置
 
@@ -63,3 +67,140 @@ tags:
 - `OnKill`：触发`kill()`时回调
 - `OnRewind`：触发`Restart()`时回调
 - `OnWayPoineChange`：唯一一个有参数的回调，主要用于`DoPath`函数，当走到一个点位时回调
+
+
+
+---
+
+### 使用技巧
+
+#### 终止动画
+
+当前dotween动画没播放完，便再次播放有冲突的操作，如连续多次播放、正播、倒播，导致显示不正常或报错。
+
+解决方法：在每次开始执行播放动画时，先加上下面对应类似的杀死进程代码，就OK了
+
+```c#
+transform.DOKill();
+transform.RectTransform().DOKill();
+```
+
+
+
+#### 忽略timeScale影响
+
+让DOTweenAnimation忽略`Time.timeScale = 0`的影响
+
+```C#
+tween.SetUpdate(true);
+```
+
+
+
+#### 360度旋转
+
+设置`Rotate`旋转模式
+
+```C#\
+transform.DOLocalRotate(new Vector3(0, 0, -360), 2, RotateMode.FastBeyond360)
+                .SetEase(Ease.Linear).SetLoops(-1, LoopType.Restart).Play();
+```
+
+
+
+#### 改变数值
+
+如果需要改变的是普通的数值，而不是Transform，可以使用一下方法
+
+```c#
+private DOGetter<float> _radiusGetter;	// 其实就是一个获取数值的委托
+private DOSetter<float> _radiusSetter;	// 其实就是一个设置数值的委托
+
+private void Awake()
+{
+    _radiusGetter = () => _light.pointLightOuterRadius;		// 定义委托
+    _radiusSetter = newValue => _light.pointLightOuterRadius = newValue;	// 定义委托
+
+    InputReader.Instance.AmplifyPressedEvent += AmplifyLight;	// 设置触发事件
+}
+
+private void AmplifyLight()
+{
+    DOTween.To(_radiusGetter, _radiusSetter, newValue, duration);// 执行DOTween动画——改变_radiusGetter获取的值
+}
+```
+
+
+
+#### `Form()`
+
+DOTween的参数默认都是目标值，使用From后参数代表起点
+
+```C#
+// 绝对位置，若当前坐标（1,0,0），即从5运动到1
+transform.DOMoveX(5, 1).From();
+transform.DOMoveX(5, 1).From(false);
+ 
+// 相对位置，若当前坐标（1,0,0），即从6运动到1（6-1=5，相对位移5）
+transform.DOMoveX(5, 1).From(true);
+```
+
+
+
+#### `SetLoops(int loops, LoopType loopType)`
+
+- `loops`：循环次数，-1为无数次循环
+- `loopType`：循环模式
+  - `Restart`：从头开始循环（默认）
+  - `Yoyo`：交替来回移动
+  - `Incremental`：设置为相对运动后才生效，**连续**"向前"移动（A到B, B到B+(A-B), ...）
+
+
+
+#### `SetRelative()`
+
+设置为相对运动
+
+
+
+
+
+
+
+#### `SetEase`
+
+**这里可以参考 👉 [| https://easings.net | ](https://www.runoob.com/jqueryui/api-easings.html)👈 上的曲线效果**
+
+<img class="half" src="/../images/unity/DOTween/SetEase.png"></img>
+
+##### Flash
+
+<img class="half" src="/../images/unity/DOTween/Flash.gif"></img>
+
+##### 示例
+
+<img class="half" src="/../images/unity/DOTween/SetEase-1.gif"></img>
+
+<img class="half" src="/../images/unity/DOTween/SetEase-2.gif"></img>
+
+<img class="half" src="/../images/unity/DOTween/SetEase-3.gif"></img>
+
+<img class="half" src="/../images/unity/DOTween/SetEase-4.gif"></img>
+
+<img class="half" src="/../images/unity/DOTween/SetEase-5.gif"></img>
+
+
+
+
+
+
+
+
+
+
+
+---
+
+参考
+
+[Unity Dotween插件的运动曲线（Ease）介绍Ease选项Ease效果示例以及C#修改动画曲线功能](https://blog.csdn.net/qq_33789001/article/details/124408540)

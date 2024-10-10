@@ -6,6 +6,19 @@ tags:
   - Nginx
 ---
 
+---
+
+### 命令
+
+```bash
+nginx -t  # 检测配置文件
+nginx -s reload # 重载配置文件
+```
+
+
+
+
+
 
 
 ---
@@ -59,6 +72,8 @@ localtion /i/ {
 
 # /i/top.gif		return /usr/local/nginx/html/blog/top.gif;
 ```
+
+
 
 
 

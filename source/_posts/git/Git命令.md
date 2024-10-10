@@ -325,7 +325,15 @@ sed -i 's/\r$//' path/to/file.text
 >
 > **所以只有在个人独自开发，且没有多平台需求的开发项目才能完全避免这个警告。**
 
-
+> 2024.10.9日更正：
+>
+> 可以更改unity的换行符格式
+>
+> Project Setting -> Editor -> Asset Serialization -> Mode
+>
+> - `Mixed`：混合模式
+> - `Force Binary`：.meta等文件将使用`CRLF`换行符格式
+> - `Force Text`：meta等文件将使用`LF`换行符格式
 
 
 
