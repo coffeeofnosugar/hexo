@@ -131,8 +131,8 @@ public bool TryResetState(IList<TState> states) {}
 ```C#
 public bool CanSetState(TState state) {}   // 判断当前状态是否能退出，目标状态是否能进入，并返回bool值结果
 
-public bool TrySetState(TState state) {}   // 正常转换，目标状态不是当前状态，且目标状态满足进入条件，才转换
-public bool TryResetState(TState state) {} // 尝试转换，目标状态能进入，就直接转换
+public bool TrySetState(TState state) {}   // 若当前状态能退出，且目标状态能进入，则进入目标状态（目标状态为非当前状态）
+public bool TryResetState(TState state) {} // 同上，但不限制目标状态，即可以重复当前状态
 public void ForceSetState(TState state) {} // 强制转换，无论当前状态、目标状态是否满足条件
 ```
 
@@ -528,7 +528,7 @@ public interface IPrioritizable : IState
 ### 示例补充
 
 除了[` StateMachine<TState>`](https://kybernetik.com.au/animancer/api/Animancer.FSM/StateMachine_1/)外，还提供了一个[`StateMachine<TKey, TState>`](https://kybernetik.com.au/animancer/api/Animancer.FSM/StateMachine_2/)
-后者得花费更多时间和精力维护，但他对与抽象和需要序列化当前状态的情况很有用
+后者得花费更多时间和精力维护，但他的优势在于可以抽象和需要序列化当前状态
 
 ```c#
 public class Character : MonoBehaviour
@@ -536,9 +536,9 @@ public class Character : MonoBehaviour
 	[SerializeField] private State _Idle;
 
 	public State Idle => _Idle;
-    public StateMachine<State> FSM { get; private set; }
+	public StateMachine<State> FSM { get; private set; }
 	protected virtual void Awake()
-    {
+	{
 		FSM = new StateMachine<State>(_Idle);		// 初始化
 	}
 }
@@ -546,9 +546,9 @@ public class Character : MonoBehaviour
 public class SomethingElse
 {
 	public void EnterIdle(Character character)
-  	{
-    	character.FSM.TryEnterState(character.Idle);	// 改变状态
-    }
+	{
+		character.FSM.TryEnterState(character.Idle);	// 改变状态
+	}
 }
 ```
 
@@ -557,28 +557,28 @@ public class SomethingElse
 ```c#
 public class Character : MonoBehaviour
 {
-  	[SerializeField] private State _Idle;
-    [SerializeField] private State _Walk;
+	[SerializeField] private State _Idle;
+	[SerializeField] private State _Walk;
 
-  	public enum Key { Idle, Walk }
+	public enum Key { Idle, Walk }
 
-  	public StateMachine<Key, State> FSM { get; private set; }
+	public StateMachine<Key, State> FSM { get; private set; }
 
-  	protected virtual void Awake()
+	protected virtual void Awake()
   	{
-    	FSM = new StateMachine<Key, State>();
-    	FSM.Add(Key.Idle, _Idle);				// 需要注册状态
-        FSM.Add(Key.Walk, _Walk);
-    	FSM.ForceSetState(Key.Idle, _Idle);		// 进入默认状态
+		FSM = new StateMachine<Key, State>();
+		FSM.Add(Key.Idle, _Idle);				// 需要注册状态
+		FSM.Add(Key.Walk, _Walk);
+		FSM.ForceSetState(Key.Idle, _Idle);		// 进入默认状态
   	}
 }
 
 public class SomethingElse
 {
-  	public void EnterIdle(Character character)
-  	{
-    	character.FSM.TryEnterState(Key.Idle);		// 只用访问FSM，直接使用枚举选择状态
-  	}
+	public void EnterIdle(Character character)
+	{
+		character.FSM.TryEnterState(Key.Idle);		// 只用访问FSM，直接使用枚举选择状态
+	}
 }
 ```
 
