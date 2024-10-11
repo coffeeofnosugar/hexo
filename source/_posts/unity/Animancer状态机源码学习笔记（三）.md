@@ -146,7 +146,7 @@ using (new StateChange<TState>(stateMachine, FallState, RunState))
 
 ---
 
-### 嵌套反问实现原理
+### 嵌套访问实现原理
 
 主要通过`using`作用域、 `StateChange()`构造函数和`Dispose()`实现
 

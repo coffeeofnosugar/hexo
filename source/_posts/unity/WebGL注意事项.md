@@ -12,7 +12,7 @@ tags:
 `WebGL`环境不支持多线程，因此：
 
 - 不能使用：`System.Threading`或`Task.Run()`之类的多线程操作
-- 不能使用：Burst编译的`JobSystem`也
+- 不能使用：Burst编译的`JobSystem`也是多线程
 
 > `多线程编程`和`异步编程`是两个不同的概念
 >
@@ -20,7 +20,7 @@ tags:
 >
 > - 可以使用：`async`和`Task`（只要没有使用`Tak.Run()`将任务调到新的线程上就OK）
 > - 可以使用：`IEnumerator`协程
-> - 可以使用：`UniTask`，`UniTask`是完全在PlayerLoop上运行的，没有使用Thread（除了`UniTask.Run`和`UniTask.SwitchToThreadPool`）
+> - 可以使用：`UniTask`是完全在PlayerLoop上运行的，没有使用Thread（除了`UniTask.Run`和`UniTask.SwitchToThreadPool`）
 
 
 
@@ -40,7 +40,7 @@ WebGL是运行在浏览器中的，没有访问本地系统的权限：
 - JavaScript 只有一种数值类型 `Number`（64位双精度浮点数），用来表示所有的数值，包括整数和浮点数
 
 - Unity的`float`（32位单精度浮点数），即便在WebGL上运行，`float`的精度还是会维持在32位导致精度损失，不如直接使用64位的`double`
-- 并且在GPU在某些情况下会降级浮点数的精度，进一步影响数值运算的精确度
+- GPU在某些情况下会降级浮点数的精度，当`float`降级成16位时，对该数据的影响就非常大了
 
 > 拓展：
 >
