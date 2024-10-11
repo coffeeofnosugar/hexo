@@ -377,9 +377,9 @@ private static StateChange<TState> _Current;
 
 > 线程静态成员特点：
 >
-> 1. 多个线程访问并改变_Current的值时，每个线程看到的是它自己的 _Current 副本，因此一个线程对 _Current 的修改不会影响其他线程。
+> 1. 多个线程访问并改变 _Current 的值时，每个线程看到的是它自己的 _Current 副本，因此一个线程对 _Current 的修改不会影响其他线程。
 > 2. 每个线程在其生命周期内对 _Current 的任何修改只对其自身有效。当线程执行完毕后，该线程的 _Current 副本就会被销毁。
-> 3. 当所有线程都执行完毕后，_Current 的最终值取决于最后一个修改它的线程的状态，或者如果没有任何线程正在进行状态更改，_Current 将保持其默认值（通常是 null 或者初始状态）。
+> 3. 当所有线程都执行完毕后 _Current 的最终值取决于最后一个修改它的线程的状态，如果没有任何线程正在进行状态更改 _Current 将保持其默认值（通常是 null 或者初始状态）。
 
 ```C#
 private StateMachine<TState> _StateMachine;		// 当前发生状态变化的状态机实例
