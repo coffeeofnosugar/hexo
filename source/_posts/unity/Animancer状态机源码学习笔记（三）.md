@@ -134,7 +134,7 @@ using (new StateChange<TState>(stateMachine, FallState, RunState))
 
 > 如果在进入其他状态后没有return就会出现一个奇怪的问题：
 >
-> `第二层嵌套一号`已经退出`RunState`了，但是在继续执行第一层时，`_stateMachine.PreviousState`会变回成`RunState`
+> `第二层嵌套一号`已经退出`RunState`了，但是不使用renturn，继续执行第一层时，`_stateMachine.PreviousState`会变回成`RunState`
 >
 > <font color="red">注意</font>：
 >
@@ -155,16 +155,18 @@ using (new StateChange<TState>(stateMachine, FallState, RunState))
 ```C#
 public void ForceSetState(TState state)
 {
-    using (new StateChange<TState>(this, CurrentState, state))	// 将 FallState -> RunState 暂存在this中
+    using (new StateChange<TState>(this, CurrentState, state))	//执行构造函数： 将 FallState -> RunState 暂存在this中
     {
         CurrentState?.OnExitState();
 
         _currentState = state;
 
         state?.OnEnterState();
-    }															// 将 FallState -> RunState 复原
+    }						// 执行Dispose： 将 FallState -> RunState 复原
 }
 ```
+
+构造函数：
 
 ```c#
 internal StateChange(StateMachine<TState> stateMachine, TState previousState, TState nextState)
@@ -176,6 +178,8 @@ internal StateChange(StateMachine<TState> stateMachine, TState previousState, TS
     _current._nextState = nextState;
 }
 ```
+
+`Dispose`：
 
 ```c#
 public void Dispose()

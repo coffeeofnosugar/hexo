@@ -61,7 +61,7 @@ git checkout --theirs <fileName>
 
 ##### 方法三：强行退出merge模式
 
-该命令将会抛弃合并过程并且尝试重建合并前的状态
+该命令将会放弃合并过程并且尝试重建合并前的状态
 
 ```bash
 git merge --abort

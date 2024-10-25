@@ -15,6 +15,49 @@ tags:
 
 {% note info %}
 
+### 链式方法
+
+{% endnote %}
+
+```C#
+public class ChainedClass
+{
+    public string name;
+    public int age;
+
+    public ChainedClass(string name)		// 通过构造函数赋值
+    {
+        this.name = name;
+    }
+
+    public ChainedClass SetAge(int age)		// 通过链式方法赋值
+    {
+        this.age = age;
+        return this;
+    }
+}
+```
+
+```C#
+ChainedClass cc = new ChainedClass("coffee")		// 构造函数
+    .SetAge(10);									// 链式方法
+Console.WriteLine(cc.Age);		// 输出10
+cc.SetAge(20);										// 再次使用链式方法
+Console.WriteLine(cc.Age);		// 输出20
+```
+
+
+
+
+
+
+
+
+
+---
+
+{% note info %}
+
 ### 扩展方法
 
 {% endnote %}
