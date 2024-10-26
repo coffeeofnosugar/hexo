@@ -74,6 +74,75 @@ tags:
 
 ### 使用技巧
 
+#### 改变数值
+
+如果需要改变的是普通的数值，而不是Transform，可以使用一下方法
+
+```c#
+private DOGetter<float> _radiusGetter;	// 其实就是一个获取数值的委托
+private DOSetter<float> _radiusSetter;	// 其实就是一个设置数值的委托
+
+private void Awake()
+{
+    _radiusGetter = () => _light.pointLightOuterRadius;		// 定义委托
+    _radiusSetter = newValue => _light.pointLightOuterRadius = newValue;	// 定义委托
+
+    InputReader.Instance.AmplifyPressedEvent += AmplifyLight;	// 设置触发事件
+}
+
+private void AmplifyLight()
+{
+    DOTween.To(_radiusGetter, _radiusSetter, newValue, duration);// 执行DOTween动画——改变_radiusGetter获取的值
+}
+```
+
+
+
+#### Sequence使用示例
+
+```c#
+private Sequence bounceSequence;
+
+bounceSequence = DOTween.Sequence()
+    // 添加一个向下移动的Tweener
+    .Append(rect.DOAnchorPosY(rect.anchoredPosition.y - 150f, .1f).SetEase(Ease.OutQuad))
+    // 添加一个还原的Tweener
+    .Append(rect.DOAnchorPosY(rect.anchoredPosition.y, .2f).SetEase(Ease.OutQuad))
+    .Pause()
+    .SetAutoKill(false);
+
+public void OnPointerClick(PointerEventData eventData)
+{
+    bounceSequence.Restart();	// 使用Restart()，表示这是一个可重复触发的动画
+}
+```
+
+
+
+#### 倒放动画
+
+```c#
+private Tweener amplifyTween;
+
+amplifyTween = rect.DOScale(1.2f, 0.2f).SetAutoKill(false).Pause();
+
+public void OnPointerEnter(PointerEventData eventData)
+{
+    amplifyTween.PlayForward();		// 鼠标进入时，放大图片
+}
+
+public void OnPointerExit(PointerEventData eventData)
+{
+    amplifyTween.PlayBackwards();		// 鼠标离开时，倒放动画，即还原
+}
+```
+
+
+
+
+
+
+
 #### 终止动画
 
 当前dotween动画没播放完，便再次播放有冲突的操作，如连续多次播放、正播、倒播，导致显示不正常或报错。
@@ -104,30 +173,6 @@ tween.SetUpdate(true);
 ```C#\
 transform.DOLocalRotate(new Vector3(0, 0, -360), 2, RotateMode.FastBeyond360)
                 .SetEase(Ease.Linear).SetLoops(-1, LoopType.Restart).Play();
-```
-
-
-
-#### 改变数值
-
-如果需要改变的是普通的数值，而不是Transform，可以使用一下方法
-
-```c#
-private DOGetter<float> _radiusGetter;	// 其实就是一个获取数值的委托
-private DOSetter<float> _radiusSetter;	// 其实就是一个设置数值的委托
-
-private void Awake()
-{
-    _radiusGetter = () => _light.pointLightOuterRadius;		// 定义委托
-    _radiusSetter = newValue => _light.pointLightOuterRadius = newValue;	// 定义委托
-
-    InputReader.Instance.AmplifyPressedEvent += AmplifyLight;	// 设置触发事件
-}
-
-private void AmplifyLight()
-{
-    DOTween.To(_radiusGetter, _radiusSetter, newValue, duration);// 执行DOTween动画——改变_radiusGetter获取的值
-}
 ```
 
 
