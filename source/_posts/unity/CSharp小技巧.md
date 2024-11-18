@@ -278,6 +278,8 @@ class ReadOnlyClass : IInterface						// 创建一个只能读取，不能更改
 
 {% endnote %}
 
+#### 自动排序列表
+
 创建一个按照特定规则排列的列表：
 
 例如，实例化一些`Human`，并且将他们按照`age`从大到小的方式放置一个列表中
@@ -342,6 +344,24 @@ humanSelector.ToList().ForEach(man => { Console.WriteLine($"{man.Key}, {man.Valu
 这样，我们就将排序封装起来了，使用者只需要使用`Add`将元素添加到排序列表中就OK了
 
 
+
+#### 遍历列表删除符合要求的元素
+
+- 使用常规方法遍历列表直接删除元素会导致遍历循环顺序错误
+- 复制列表会占用内存
+
+最快速也是最简单的方法：反向遍历，从大索引号开始遍历
+
+```C#
+List<int> list = new List<int>(){ 1, 2, 3, 4, 5 };
+for (int i = list.Count - 1; i >= 0; i--)
+{
+    if (list[i] >= 4)
+    {
+        list.RemoveAt(i);
+    }
+}
+```
 
 
 
@@ -492,7 +512,7 @@ Console.WriteLine(str[^7..8]);			// "loWor"
 ```
 
 - 这里的`^`和`python`里的`-`一样：反着数，`^1`表示最后一个字符`d`，`^5`表示倒数第五个字符`W`
-- 左闭又开，包含第一个参数，不包含第二个参数
+- 左闭右开，包含第一个参数，不包含第二个参数
 
 
 

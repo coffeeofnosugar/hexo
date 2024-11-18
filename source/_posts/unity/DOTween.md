@@ -240,6 +240,89 @@ transform.DOMoveX(5, 1).From(true);
 
 
 
+---
+
+### UniTask配合
+
+想要将DoTween转换成UniTask，需要在ProjectSetting - Player - OtherSetting - ScriptingDefineSymbols中添加`UNITASK_DOTWEEN_SUPPORT`
+
+优点：
+
+- 可以使用await，而不是OnComplete回调函数，使代码更直观
+
+  ```C#
+  private async void Start()
+  {
+      await transform.DOMove(new Vector3(5f, 0, 5f), 2);			// 先移动
+      await transform.DORotate(new Vector3(90f, 90, 90f), 2);		// 再旋转
+      Debug.Log("Complete");										// 最后再输出
+  }
+  ```
+
+- 可以使用WithCancellation方法取消DOTween
+
+  ```C#
+  public class UniTaskWithDOTween : MonoBehaviour
+  {
+      private CancellationTokenSource _cts = new CancellationTokenSource();
+  
+      private async void Start()
+      {
+          await transform.DOMove(new Vector3(5f, 0, 5f), 2).WithCancellation(_cts.Token);
+          Debug.Log("Complete");
+      }
+  
+      private void Update()
+      {
+          if (Mouse.current.leftButton.wasPressedThisFrame)
+          {
+              _cts.Cancel();
+          }
+      }
+  
+      private void OnDestroy()
+      {
+          _cts?.Dispose();
+      }
+  }
+  ```
+
+> 注意：
+>
+> - 如果想要重复使用tweenrs（`SetAutoKill(false)`），则永远不会触发await下方的代码
+>
+> - 如果想要等待另一个时间点，可以使用扩展方法`AwaitForComplete`, `AwaitForPause`, `AwaitForPlay`, `AwaitForRewind`, `AwaitForStepComplete`。
+>
+>   ```C#
+>   public class UniTaskWithDOTween : MonoBehaviour
+>   {
+>       private Tweener tween;
+>   
+>       private void Awake()
+>       {
+>           tween = transform.DOMove(new Vector3(5f, 0, 5f), 2).Pause();
+>       }
+>   
+>       private async void Start()
+>       {
+>           await tween.AwaitForPlay();		// 先是被挂起，当在Update中检测到鼠标右键点击后，再执行下方代码
+>           Debug.Log("Play");
+>       }
+>   
+>       private void Update()
+>       {
+>           if (Mouse.current.rightButton.wasPressedThisFrame)
+>           {
+>               tween.Play();
+>           }
+>       }
+>   }
+>   ```
+>
+>   
+
+
+
 
 
 

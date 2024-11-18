@@ -344,7 +344,7 @@ public partial struct ServerProcessGameEntryRequestSystem : ISystem
 >   ```C#
 >   namespace Unity.NetCode
 >   {
->   	[DontSupportPrefabOverrides]
+>       [DontSupportPrefabOverrides]
 >       [GhostComponent(SendDataForChildEntity = true)]
 >       public struct GhostOwner : IComponentData
 >       {
@@ -553,7 +553,7 @@ foreach (var (levelToLoad, rpcEntity) in
 > }
 > ```
 >
-> ~~如果将`DefaultGhostMode`必须设置成`Interpolated`就会像下方这样出现很奇怪的BUG~~
+> ~~如果将`DefaultGhostMode`设置成`Interpolated`就会像下方这样出现很奇怪的BUG~~
 >
 > <img class="half" src="/../images/unity/ECS框架学习笔记/奇怪BUG-1.png"></img>
 
@@ -595,7 +595,7 @@ public struct GhostOwnerIsLocal : IComponentData, IEnableableComponent { }
 
 ##### Struct组件属性
 
-- `[GhostComponent()]`：常用于`IcommandData`，与普通的`GhostComponent`不同，`IcommandData`默认不会从服务器同步到所有客户端。可设置参数如下：
+- `[GhostComponent()]`：常用于`IcommandData`、`IBufferElementData`等。可设置参数如下：
   - `PrefabType`：设置该组件是否需要烘焙到客户端上，例如：
     - `GhostPrefabType.AllPredicted`：`Predicted`模式的实体，客户端和服务端都会烘焙；`Interpolated`和`Owner Predicted`不会烘焙客户端
     - `GhostPrefabType.All`（默认选项）：所有类型，客户端、服务端都会烘焙
@@ -621,7 +621,7 @@ public struct GhostOwnerIsLocal : IComponentData, IEnableableComponent { }
 
 ```C#
 // [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]	// 共同初始化
-// [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]		// 只在客户端上初始化
+// [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]  // 只在客户端上初始化
 // [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]      // 只在服务端运行
 public partial struct InitializeCharacterSystem : ISystem
 {
@@ -653,7 +653,7 @@ public partial struct InitializeCharacterSystem : ISystem
 {% endgrouppicture %}
 
 - `Rigibody`：
-  - `Use Gravity`：为了避免服务端和客户端不同步，我们不能使用物理系统。关闭后就会多出`Physics Gravity Factor`组件（暂时不知道是干嘛的？）
+  - `Use Gravity`：为了避免服务端和客户端不同步，我们不能使用物理系统。
   - `Is Kinematic`：启用后物理系统将不能施加力来移动或旋转物体，而只能改变Transform来移动旋转物体
   
   ```C#
@@ -680,12 +680,6 @@ ecb.SetComponent(newCharacterEntity, new URPMaterialPropertyBaseColor{ Value = t
 
 
 
-#### 优化
-
-就目前来说，这个初始化System可以只在客户端上运行？
-
-
-
 ---
 
 ### 输入
@@ -699,9 +693,9 @@ ecb.SetComponent(newCharacterEntity, new URPMaterialPropertyBaseColor{ Value = t
 
 - 如果需要频繁的从客户端向服务器发送数据应该使用`ICommandData`而不是`RPC`，`ICommandData`有优化
 
- - <font color='red'>**必须是从客户端发送到服务器**</font>，unity会自动将数据发送给服务器。用来控制实体的命令，或是保存状态，如技能CD、伤害等凡是与时间相关的
+ - <font color='red'>**必须是从客户端发送到服务器**</font>。客户端只需要执行赋值操作，unity会自动将数据同步到服务器。<font color="DarkGray">用来控制实体的命令，或是保存状态，如技能CD、伤害等凡是与时间相关的</font>
 - 类似于一个`Dynamic Buffer`动态缓冲器，他将保存最后64`NetWorkTick`的数据
-- 默认情况下不会从服务器复制到所有客户端，需要使用`GhostComponent`属性设置。因为`ICommandData`的工作方式，不建议设置为`SendToOwnerType.SendToOwner`，将被视为错误并并忽略
+- 默认情况下不会从服务器复制到所有客户端，需要使用`GhostComponent`属性设置<font color="DarkGray">（例如：技能恢复时间，其他玩家不需要知道你的技能什么时候恢复）</font>。因为`ICommandData`的工作方式，不建议设置为`SendToOwnerType.SendToOwner`，将被视为错误并并忽略
 
 ```C#
 public struct DamageThisTick : ICommandData{
@@ -831,7 +825,7 @@ public partial class AbilityInputSystem : SystemBase
 ```c#
 private void OnSelectMovePosition()
 {
-	var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;	// 获取物理系统
+    var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;	// 获取物理系统
     var cameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
     var mainCamera = EntityManager.GetComponentObject<MainCamera>(cameraEntity).Value;		// 获取相机位置
 
@@ -896,7 +890,7 @@ hits.Dispose();
 2. 客户端和服务端都会运行的`InitializeDestoryOnTimerSystem`捕获拥有`DestoryOnTimer`组件的实体，并<font color="red">**计算**</font>该实体在多少Tick的时候销毁，将计算的事件存储在`DestroyAtTick`的Ghost数据上
 
    - 服务器计算时间不能以`deltaTime`（不够稳定）或`frame`（客户端和服务端会不一致）
-   - 而是使用`ServerTick`，说简单点其实也是帧，只不过是特指服务器的帧，默认为60Tick/秒
+   - 而是使用`ServerTick`，说简单点其实频率，默认为60Tick/秒，与普通的帧还不太一样
 
 3. 客户端和服务端都会运行的`DestroyOnTimerSystem`捕获拥有`DestroyAtTick`组件的实体，并<font color="red">**判断**</font>该实体是否已达到销毁时间，达到销毁时间后挂载`DestroyEntityTag`标签
 
@@ -908,7 +902,7 @@ hits.Dispose();
    - 服务端：直接摧毁
    - 客户端：将物体移动到不可见的位置，并等待服务器同步
 
-   从下图可看出，有一半的次数客户端要晚于服务端摧毁，然而实际运用起来可能不止一半
+   从下图可看出，有一半的次数客户端要晚于服务端摧毁，并且实际运用起来可能不止一半
 
    <img class="half" src="/../images/unity/ECS框架学习笔记/销毁.gif"></img>
 
