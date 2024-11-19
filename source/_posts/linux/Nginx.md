@@ -37,3 +37,12 @@ tags:
 而/usr/bin/是全局可用的，所以在任何地方输入nginx都可以执行/usr/lcoal/nginx/sbin/nginx
 
 
+
+
+
+使用下面命令实时查看log更新
+
+```bash
+less +F access.log
+```
+

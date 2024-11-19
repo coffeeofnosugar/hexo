@@ -186,7 +186,7 @@ static void InsertionSort(int[] arr)
 
 #### 归并排序
 
-<img class="half" src="/../images/unity/CSharp算法学习笔记/排序算法/插入排序.png"></img>
+<img class="half" src="/../images/unity/CSharp算法学习笔记/排序算法/并归排序.png"></img>
 
 ```C#
 static void MergeSort(int[] arr, int left, int right)
@@ -222,8 +222,6 @@ static void merge(int[] arr, int L, int M, int R)
 
 现有一个数组arr和target，要求小于target的数放在数组左边，大于target的放在数组的右边，等于target的数放在中间
 
-<img class="half" src="/../images/unity/CSharp算法学习笔记/排序算法/荷兰国旗.png"></img>
-
 ```C#
 // 荷兰国旗
 static void Partition(int[] arr, int target)
@@ -233,20 +231,23 @@ static void Partition(int[] arr, int target)
     while (i < right)
     {
         if (arr[i] < target)
-            Swap(arr, ++left, i);
+            Swap(arr, ++left, i++);
         else if (arr[i] > target)
-            Swap(arr, i--, --right);
-        i++;
+            Swap(arr, i, --right);
+        else
+            i++;
     }
 }
 ```
+
+<img class="half" src="/../images/unity/CSharp算法学习笔记/排序算法/荷兰国旗.png"></img>
 
 ```C#
 // 快速排序
 static void QuickSort(int[] arr, int L, int R)
 {
     if (L >= R) return;
-    int random = new Random().Next(R - L + 1);
+    int random = new Random().Next(R - L + 1);	// 随机取出一个数将其作为基准，这样可以将事件复杂度降低为O(N*logN)
     Swap(arr, L + random, R);
     int[] p = Partition(arr, L, R);
     QuickSort(arr, L, p[0] - 1);  // < 区域
@@ -268,7 +269,7 @@ static int[] Partition(int[] arr, int L, int R)
         else                       // 当指针上的数等于基准数时，指针右移
             L++;
     }
-    Swap(arr, more, R);         // 将基准数与 > 区域的第一个数交换
+    Swap(arr, R, more);         // 将基准数与 > 区域的第一个数交换
     return new[] { less + 1, more };    // 返回等于区域的左右边界
 }
 ```
