@@ -11,6 +11,76 @@ tags:
 
 
 
+
+
+
+
+
+
+---
+
+{% note info %}
+
+### 类型名称
+
+{% endnote %}
+
+- `nameof()`：参数的名称(编译时确定好的常量)，如果是泛型参数则输出`T`
+- `typeof().Name`：类名的名称(编译时确定好的常量)，如果是泛型参数则会输出泛型类实例化时的泛型类型（泛型函数的泛型参数的泛型参数）<font color="darkgray">如果参数不是泛型参数，则与`nameof()`的效果一样</font>
+- `obj.GetType().Name`：实时获取obj的类型
+
+测试代码：
+
+```C#
+public class Item{}
+public class ItemA : Item{}
+public class ItemB : Item{}
+
+public class Test : MonoBehaviour
+{
+    private Test<Item> test = new();
+    private void Awake()
+    {
+        Debug.Log($"{nameof(Item)}  {nameof(ItemA)}  {nameof(ItemB)}");		// Item  ItemA  ItemB
+        Debug.Log($"{typeof(Item).Name}  {typeof(ItemA).Name}  {typeof(ItemB).Name}");	// 同上
+        test.FuncTO<Item>();		// TO Item
+        test.FuncTO<ItemA>();		// TO ItemA
+        test.FuncTO<ItemB>();		// TO ItemB
+        test.FuncT(new Item());		// T Item Item
+        test.FuncT(new ItemA());	// T Item ItemA
+        test.FuncT(new ItemB());	// T Item ItemB
+    }
+}
+
+public class Test<T>
+{
+    public Test()
+    {
+        Debug.Log($"构造函数: {nameof(T)} {typeof(T).Name}");	// T Item
+    }
+    
+    public void FuncTO<TO>()
+    {
+        Debug.Log($"FuncTO: {nameof(TO)} {typeof(TO).Name}");
+    }
+
+    public void FuncT(T item)
+    {
+        Debug.Log($"FuncT: {nameof(T)} {typeof(T).Name} {item.GetType().Name}");
+    }
+}
+```
+
+<img class="half" src="/../images/unity/CSharp小技巧/类型名称.png"></img>
+
+
+
+
+
+
+
+
+
 ---
 
 {% note info %}
@@ -700,33 +770,32 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 
 {% note info %}
 
-#### 属性
-
-
-{% endnote %}
-
-##### 序列化
-
-- `SerializeReference`：使用Inspector窗口能序列化接口或抽象类，序列化的时候就已经实例化了，可以不需要使用`new()`实例化
-
-
-
-
-
-
-
----
-
-{% note info %}
-
-#### 内置方法
-
+#### 性能测试
 
 {% endnote %}
 
-- `void OnValidate()`：这个方法会将用户在UnityEditor上的操作实时映射到脚本上
+使用`Profiler.BeginSample(string)`与`Profiler.EndSample()`方法捕获代码片段
 
+```C#
+private void Update()
+{
+    Profiler.BeginSample("Invoke Action");
+    for (int i = 0; i < 1000000; i++)
+    {
+        actionA?.Invoke();
+    }
+    Profiler.EndSample();
 
+    Profiler.BeginSample("Invoke default Action");
+    for (int i = 0; i < 1000000; i++)
+    {
+        actionB.Invoke();
+    }
+    Profiler.EndSample();
+}
+```
+
+<img class="half" src="/../images/unity/CSharp小技巧/unity/Profiler.BeginSample.png"></img>
 
 
 
