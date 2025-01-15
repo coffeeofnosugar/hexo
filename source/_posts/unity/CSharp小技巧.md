@@ -11,6 +11,98 @@ tags:
 
 
 
+---
+
+{% note info %}
+
+### Linq
+
+{% endnote %}
+
+#### Where
+
+#### Sort
+
+时间复杂度为O(nlogn)
+
+默认排序
+
+```C#
+int[] numbers = { 5, 2, 8, 3, 1 };
+Array.Sort(numbers); // 排序后：{1, 2, 3, 5, 8}
+```
+
+自定义比较器
+
+```c#
+string[] names = { "Alice", "Bob", "Charlie" };
+Array.Sort(names, (x, y) => y.Length.CompareTo(x.Length)); // 按字符串长度降序
+```
+
+多条件排序
+
+```C#
+class Person
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+}
+
+var people = new List<Person>
+{
+    new Person { Name = "Alice", Age = 30 },
+    new Person { Name = "Bob", Age = 25 },
+    new Person { Name = "Charlie", Age = 25 }
+};
+
+// 按年龄升序，再按姓名升序
+people.Sort((x, y) =>
+{
+    int ageComparison = x.Age.CompareTo(y.Age);
+    return ageComparison == 0 ? x.Name.CompareTo(y.Name) : ageComparison;
+});
+```
+
+部分排序
+
+```C#
+List<int> numbers = new List<int> { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+// 仅对索引 2 到 6 进行排序
+numbers.Sort(2, 5, Comparer<int>.Default); // {10, 9, 3, 4, 5, 6, 8, 7, 2, 1}
+```
+
+> 拓展：
+>
+> ```C#
+> public delegate int Comparison<in T>(T x, T y);
+> ```
+>
+> **输入参数**：
+>
+> - `x` 和 `y` 是要比较的两个对象，类型为 `T`。
+>
+> **返回值**：
+>
+> - 一个整数，用来表示排序顺序：
+>   - **负数**：表示 `x` 小于 `y`（`x` 排在 `y` 前面）。
+>   - **零**：表示 `x` 等于 `y`（两者顺序不变）。
+>   - **正数**：表示 `x` 大于 `y`（`x` 排在 `y` 后面）。
+>
+> ```C#
+> x.CompareTo(y) = 20.CompareTo(10)	// 返回1
+> ```
+>
+> ```c#
+> List<int> numbers = new List<int> { 5, 2, 8, 3, 1 };
+> 
+> numbers.Sort((x, y) => x.CompareTo(y)); // 使用 Lambda 表达式定义 Comparison<T>
+> 
+> // 输出：1, 2, 3, 5, 8
+> numbers.ForEach(Console.WriteLine);
+> ```
+>
+> 
+
 
 
 
@@ -722,6 +814,15 @@ Console.WriteLine($"我的资产为{i, 10:F4}为所欲为");		// "我的资产�
 - `G`：自动选择合适的格式。
 - `P`：百分比格式。将数值乘以100，并在结果后面加上百分号。`$"{0.12345:p2}"` => `12.35%`
 - `R`：常规格式。不带任何格式的方式显示数字，但保留足够的精度（怎么保留没有仔细研究，简单测试了几下，没有找出规律）
+
+实用方法：
+
+```C#
+float value = 546.5198;
+string str = $"{value:0.##}";	// 保留两位小数，当小数不足时不显示（如，1.2 => 1.2 而不是1.20）
+```
+
+
 
 #### 日期时间格式
 
