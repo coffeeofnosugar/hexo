@@ -44,10 +44,9 @@ tags:
            }
        }
    }
-   
    ```
-
-7. 运行菜单 HybridCLR/Build/BuildAssets And CopyTo AssemblyPath
+   
+7. (这步必不可少)运行菜单 HybridCLR/Build/BuildAssets And CopyTo AssemblyPath
 
 8. 运行菜单TEngine/QuickBuild/一键打包AssetBundle
 
