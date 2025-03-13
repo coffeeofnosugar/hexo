@@ -846,6 +846,8 @@ string str = $"{value:0.##}";	// 保留两位小数，当小数不足时不显�
 
 另外还有十分强大的**自定义**格式化
 
+`DateTime`的格式化：
+
 ```C#
 DateTime date = DateTime.Now;
 Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
@@ -857,7 +859,20 @@ Console.WriteLine($"{date:yyyy年mm月dd日 hh:mm:ss tt zzz}");
 2024年05月11日 05:05:09 上午 +08:00
 ```
 
+`TimeSpan`的格式化：
 
+```C#
+TimeSpan timeSpan = endTime - DateTime.Now;
+timeSpan.ToString(@"d\天hh\时mm\分");			// '\'必不可少，表示后面一位是普通字符
+timeSpan.ToString(@"d\:h\:mm);
+```
+
+输出
+
+```C#
+// 1天03时15分
+// 1:3:15分
+```
 
 
 
