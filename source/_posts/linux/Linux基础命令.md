@@ -111,3 +111,74 @@ sudo usermod -aG sudo {username}
 | `firewall-cmd --zone=public --add-port=80/tcp --permanent` | 开放80端口，`--premanent`表示永久开放，重启后也依然开放 |
 
 每次在配置完防火墙之后需使用`firewall-cmd --reload`更新配置
+
+
+
+---
+
+### 文件操作
+
+| cat  <fileName>             | 查看文件                           |
+| --------------------------- | ---------------------------------- |
+| touch  <fileName>           | 创建文件                           |
+| mkdir  <dirName>            | 创建文件夹                         |
+| cp  fileName <pah>          | 复制文件(后面的地址，不用加文件名) |
+| mv  <filename> <path>       | 移动文件                           |
+| mv  <fileName1> <fileName2> | 修改文件名称                       |
+| rm  <filename>              | 删除文件                           |
+| rm -r  <dirName>            | 删除空文件夹 -f 强制删除，不用确认 |
+
+| cd   |                    |
+| ---- | ------------------ |
+| pwd  | 显示当前所在路径   |
+| cd - | 返回上一次所在路径 |
+
+文件权限
+
+r:4  w:2  x:1
+
+owner = rwx = 4+2+1 =7
+
+chmod [-R] xyz <fileName>
+
+将owner/group/others及其子文件都设置为可读可写可执行
+
+chmod -R 777 fileName
+
+
+
+
+
+---
+
+### 端口
+
+| netstat  -lntp | 查看网络连接状态和端口情况                                   |
+| -------------- | ------------------------------------------------------------ |
+| lsof -i  :5000 | 查看5000端口的进程PID，然后可以使用sudo kill <PID>关闭这个进程 |
+
+
+
+---
+
+### 进程
+
+| top    | 查看系统实时状态，可以使用top  -b -d 10 -n 10 > top_log.txt 来将内容保存下来(每十秒保存一次，共保存10次) |
+| ------ | ------------------------------------------------------------ |
+| ps -ef | 查看所有进程可以通过 ps  -ef \| grep <contetn>来筛选         |
+
+
+
+---
+
+### 解压/压缩
+
+| .tar    | tar xvf  FileName.tar             | 解压                                       |
+| ------- | --------------------------------- | ------------------------------------------ |
+|         | tar cvf  FileName.tar DirName     | 压缩 tar cvf  {newname.tar} {path/to/name} |
+| .tar.xz | tar xvf  FileName.tar.xz          |                                            |
+|         | tar cvf  FileName.tar DirName     |                                            |
+| .tar.gz | tar  zxvf FileName.tar.gz         |                                            |
+|         | tar  zcvf FileName.tar.gz DirName |                                            |
+| zip     | unzip  FileName.zip               |                                            |
+|         | zip  FileName.zip DirName         |                                            |
