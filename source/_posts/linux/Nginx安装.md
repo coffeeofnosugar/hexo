@@ -1,5 +1,5 @@
 ---
-title: 【Linux】Nginx
+title: 【Linux】Nginx安装
 date: 2023-08-21 20:50:06
 tags:
   - Linux
@@ -12,7 +12,7 @@ tags:
 
 网站：[nginx: download](https://nginx.org/en/download.html)
 
-<img src="/../images/linux/nginx/安装网站.png"></img>
+<img src="/../images/linux/nginx安装/安装网站.png"></img>
 
 #### 上传解压
 
@@ -25,6 +25,18 @@ tags:
 `make`
 
 `make install`
+
+> 在执行`./configure`时如果出现报错缺少对应的模块，则安装对应的模块
+>
+> 1. 缺少PCRE，安装命令：`sudo apt install libpcre3 libpcre3-dev`
+>
+>    <img src="/../images/linux/nginx安装/缺少PCRE.png"></img>
+>
+> 2. 缺少SpenSSL，安装命令：`sudo apt install libssl-dev`
+>
+>    <img src="/../images/linux/nginx安装/缺少OpenSSL.png"></img>
+>
+>    
 
 #### 环境配置
 

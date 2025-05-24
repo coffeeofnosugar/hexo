@@ -39,8 +39,8 @@ tags:
 |          | -P                                  | 随机指定端口(大写P)                     |
 | 退出容器 | exit                                | 停止容器并退回主机                      |
 |          | Ctrl +  P + Q                       | 不停止容器，退回主机Ctrl+D也可以        |
-| 进入容器 | docker attach <容器id>              | 进入容器，开启一个新的终端              |
-|          | docker exec -it <容器id>  /bin/bash | 进入正在运行的容器                      |
+| 进入容器 | docker attach <容器id>              | 进入正在运行的容器                      |
+|          | docker exec -it <容器id>  /bin/bash | 进入容器，开启一个新的终端              |
 | 列出容器 | docker  ps                          | 列出当前正在运行的容器                  |
 |          | -a                                  | 列出所有容器（运行的容器/未运行的容器） |
 |          | -n=2                                | 显示最近创建的2个容器                   |

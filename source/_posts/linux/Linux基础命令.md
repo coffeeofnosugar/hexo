@@ -121,7 +121,7 @@ sudo usermod -aG sudo {username}
 | cat  <fileName>             | 查看文件                           |
 | --------------------------- | ---------------------------------- |
 | touch  <fileName>           | 创建文件                           |
-| mkdir  <dirName>            | 创建文件夹                         |
+| mkdir -p  <dirName>         | 创建文件夹（-p 创建缺失的父目录）  |
 | cp  fileName <pah>          | 复制文件(后面的地址，不用加文件名) |
 | mv  <filename> <path>       | 移动文件                           |
 | mv  <fileName1> <fileName2> | 修改文件名称                       |
@@ -133,17 +133,80 @@ sudo usermod -aG sudo {username}
 | pwd  | 显示当前所在路径   |
 | cd - | 返回上一次所在路径 |
 
-文件权限
 
-r:4  w:2  x:1
 
-owner = rwx = 4+2+1 =7
+```bash
+-rwxrw-r--   1 ubuntu root 1249 May 22 01:09 init.vim
+```
 
-chmod [-R] xyz <fileName>
 
-将owner/group/others及其子文件都设置为可读可写可执行
 
-chmod -R 777 fileName
+1. 第一个字符：表示类型
+   - -：普通文件
+   - d：目录
+   - l：软链接
+
+2. 后续9个字符：表示权限
+
+   - rwx：所有者可读可写可执行
+   - rw-：所属组可读可写
+   - r--：其他用户仅可读
+
+   > 文件权限
+   >
+   > r:4  w:2  x:1
+   >
+   > owner = rwx = 4+2+1 =7
+   >
+   > chmod [-R] xyz <fileName>
+   >
+   > 将owner/group/others及其子文件都设置为可读可写可执行
+   >
+   > chmod -R 777 fileName
+
+3. 硬链接数
+
+   - 表示该文件的硬链接数量为1（即无其他硬链接指向此文件）
+   - 如果是目录，此数字表示子目录数（至少为2，含 `.` 和 `..`）
+
+   > 硬链接是同一个文件的**多个名称**（类似于一个人的多个别名）。
+   >
+   > 删除原始文件或任一硬链接，只要还存在至少一个硬链接，文件数据就不会被真正删除。
+   >
+   > 用途：
+   >
+   > 1. **备份与冗余**：通过硬链接保护重要文件（删除一个不影响其他）。
+   > 2. **节省空间**：多个硬链接共享同一份数据，不占用额外磁盘空间。
+   > 3. **版本控制**：某些工具（如 Git）内部使用硬链接优化存储。
+   >
+   > ```bash
+   > # 创建硬链接
+   > echo "Hello" > original.txt
+   > ln original.txt hardlink.txt  # 创建硬链接
+   > 
+   > # 查看 inode（确认是否相同）
+   > ls -i original.txt hardlink.txt
+   > # 输出示例：12345 original.txt  12345 hardlink.txt
+   > 
+   > # 删除原始文件后，硬链接仍可访问
+   > rm original.txt
+   > cat hardlink.txt  # 正常输出 "Hello"
+   > ```
+
+4. 所属者和所属组
+
+   - 所有者为ubuntu（**所有者（Owner）**：当前拥有文件控制权的用户（不一定是创建者）。）
+   - 所属组为root
+
+5. 文件大小
+
+   - 1240字节（默认单位是字节，使用ls -lh可显示易读单位）
+
+6. 最后修改时间
+
+快捷方式
+
+`ln -s /usr/local/nginx/sbin/nginx /usr/bin/nginx`
 
 
 
@@ -163,11 +226,10 @@ chmod -R 777 fileName
 
 ### 进程
 
-| top    | 查看系统实时状态，可以使用top  -b -d 10 -n 10 > top_log.txt 来将内容保存下来(每十秒保存一次，共保存10次) |
-| ------ | ------------------------------------------------------------ |
-| ps -ef | 查看所有进程可以通过 ps  -ef \| grep <contetn>来筛选         |
-
-
+| top                  | 查看系统实时状态，可以使用top  -b -d 10 -n 10 > top_log.txt 来将内容保存下来(每十秒保存一次，共保存10次) |
+| -------------------- | ------------------------------------------------------------ |
+| ps -ef               | 查看所有进程可以通过 ps  -ef \| grep <contetn>来筛选         |
+| ps aux \| grep nginx | 查看nginx的进程                                              |
 
 ---
 
