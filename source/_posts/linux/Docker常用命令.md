@@ -38,6 +38,20 @@ tags:
 
 
 
+进入数据库的方法：
+
+1. 方法一
+   1. 进入容器`docker-compose exec -it mongo bash`
+   2. 在容器内执行`mongosh -u your_name -p your_password`
+2. 方法二
+   1. 直接在一行命令中完成`docker-compose exec -it mongo mongosh -u your_name -p your_password`
+
+
+
+
+
+
+
 ### 容器命令
 
 | 创建容器 | docker  run <imageName>             | 创建并运行容器，对象是镜像              |
