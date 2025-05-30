@@ -28,6 +28,16 @@ tags:
 | 删除镜像 | docker  rmi -f <imageId>   |                                             |
 |          | -f  $(docker images -aq)   | 删除所有镜像                                |
 
+运行临时容器`docker run --rm -i grafana/k6 run - < k6-test.js`
+
+- `run`：运行容器
+- `--rm`：运行后自动删除容器
+- `-i`：可以在容器运行时提供输入，与`-`结合可以接收来自标准输入的内容
+- `grafana/k6`：镜像名称
+- `run - < k6-test.js`：需要运行的命令，`- <`将后面的内容传递给run
+
+
+
 ### 容器命令
 
 | 创建容器 | docker  run <imageName>             | 创建并运行容器，对象是镜像              |
