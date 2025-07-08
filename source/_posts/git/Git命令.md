@@ -185,6 +185,14 @@ git ls-files -z | xargs -0 du -hc | grep total$
 
 <img class="base" src="/../images/git/git命令/列出仓库所有文件.png"></img>
 
+#### 创建一个全新的分支
+
+在现有的仓库中创建一个全新的、完全空的分支
+
+`git checkout --orphan <branch_name>`
+
+
+
 
 
 ---
