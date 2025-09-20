@@ -208,6 +208,18 @@ sudo usermod -aG sudo {username}
 
 `ln -s /usr/local/nginx/sbin/nginx /usr/bin/nginx`
 
+7. 实时查看log文件
+
+```shell
+tail -f /path/to/your/logfile.log
+```
+
+```shell
+less +F /path/to/your/logfile.log
+```
+
+
+
 
 
 
