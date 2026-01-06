@@ -13,9 +13,19 @@ tags:
 
 打开路径下的platform-tools文件夹，在cmd中进入该路径
 
-在cmd中输入`adb logcat -s Unity`随后即可看到log日志
+在cmd中输入`adb logcat -s Unity`随后即可在cmd中实时看到log日志，这样即使程序闪退也能看到日志了
 
 
+
+如果觉得窗口不方便查看，或者中文是乱码，可以使用`adb logcat -s Unity -d > C:\Work\Project\UnityADBLog.txt`将日志输出到本地文件中
+
+
+
+
+
+#### 引用
+
+https://developer.aliyun.com/article/666214
 
 
 
