@@ -915,7 +915,29 @@ private void Update()
 
 
 
+{% note info %}
 
+#### UGUI
+
+{% endnote %}
+
+在ugui中，给一个拥有`Content Size Fitter`的对象添加数个子节点后，该对象的大小并不一定会立刻改变成合适的大小，尤其是在该对象的父节点同样拥有`Content Size Fitter`组件的情况下。
+
+解决方案：使用`LayoutRebuilder.ForceRebuildLayoutImmediate(RectTransform)`方法立刻刷新该对象的大小。
+
+> `LayoutRebuilder.ForceRebuildLayoutImmediate(RectTransform)`的作用
+>
+> - **同步刷新布局**：通常，Unity的UI布局（比如`VerticalLayoutGroup`、`HorizontalLayoutGroup`等）在元素变动后，会在下一帧自动更新。如果你希望立刻看到变化效果，使用`ForceRebuildLayoutImmediate`可以强制马上重新布局。
+> - **处理UI嵌套或动态变更**：在有些场景下，通过代码动态增删控件、修改内容或尺寸，自动刷新不及时或不生效，此时调用本方法可确保UI排列正确。
+
+> 拓展：
+>
+> 除了上面这个接口外，还有`LayoutRebuilder.MarkLayoutForRebuild(RectTransform)`。
+>
+> - Immediate：马上重新布局
+> - Mark：标记为需要重建，延迟到下一个布局更新阶段（效率更高）
+>
+> 一般可以两个都同时调用一下
 
 
 
