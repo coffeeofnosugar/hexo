@@ -96,6 +96,26 @@ private void AmplifyLight()
 }
 ```
 
+```C#
+// 可以让 m_tmp999 的文字从 currentView 在1.2秒内平滑的变成 realCoin
+// 从断点来看，第一个委托只有在第一次获取初始值时才会执行一次就不会再执行了；第二个委托每帧都会执行一次，value的值会慢慢接近 realCoin
+var realCoin = LevelManager.Instance.LevelDataCollection.Coin;
+var currentView = int.Parse(m_tmp999.text);
+DOTween.To(() => currentView,
+           value =>
+           {
+               m_tmp999.text = value.ToString();
+           }, realCoin, 1.2f);
+```
+
+
+
+
+
+
+
+
+
 
 
 #### Sequence使用示例
@@ -297,18 +317,18 @@ transform.DOMoveX(5, 1).From(true);
 >   public class UniTaskWithDOTween : MonoBehaviour
 >   {
 >       private Tweener tween;
->   
+>     
 >       private void Awake()
 >       {
 >           tween = transform.DOMove(new Vector3(5f, 0, 5f), 2).Pause();
 >       }
->   
+>     
 >       private async void Start()
 >       {
 >           await tween.AwaitForPlay();		// 先是被挂起，当在Update中检测到鼠标右键点击后，再执行下方代码
 >           Debug.Log("Play");
 >       }
->   
+>     
 >       private void Update()
 >       {
 >           if (Mouse.current.rightButton.wasPressedThisFrame)
