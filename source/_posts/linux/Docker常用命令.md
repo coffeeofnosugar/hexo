@@ -48,7 +48,7 @@ tags:
 
 
 
-
+> docker compose 后台运行命令 `docker compose up -d`
 
 
 
