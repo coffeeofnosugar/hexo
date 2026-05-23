@@ -257,3 +257,41 @@ less +F /path/to/your/logfile.log
 |         | tar  zcvf FileName.tar.gz DirName |                                            |
 | zip     | unzip  FileName.zip               |                                            |
 |         | zip  FileName.zip DirName         |                                            |
+
+
+
+
+
+---
+
+在重装linux系统后，vscode无法连接，可能是ssh秘钥变了
+
+报错内容，提示`C:\\Users\\coffeeofnosugar/.ssh/known_hosts:10`第10行，那就删掉这一行。如果还是不行，那就删除掉有相同ip的行
+
+```bash
+> Please contact your system administrator.
+> Add correct host key in C:\\Users\\coffeeofnosugar/.ssh/known_hosts to get rid of this message.
+> Offending ECDSA key in C:\\Users\\coffeeofnosugar/.ssh/known_hosts:10
+> Host key for 42.192.110.49 has changed and you have requested strict checking.
+> Host key verification failed.
+> The process tried to write to a nonexistent pipe.
+[23:47:27.438] "install" terminal command done
+[23:47:27.438] Install terminal quit with output: Host key verification failed.
+[23:47:27.438] Received install output: Host key verification failed.
+[23:47:27.438] WARN: $PLATFORM is undefined in installation script output.  Errors may be dropped.
+[23:47:27.439] Failed to parse remote port from server output
+[23:47:27.439] Resolver error: Error
+    at y.Create (c:\Users\coffeeofnosugar\.vscode\extensions\ms-vscode-remote.remote-ssh-0.123.0\out\extension.js:2:722235)
+    at t.handleInstallOutput (c:\Users\coffeeofnosugar\.vscode\extensions\ms-vscode-remote.remote-ssh-0.123.0\out\extension.js:2:720316)
+    at t.tryInstall (c:\Users\coffeeofnosugar\.vscode\extensions\ms-vscode-remote.remote-ssh-0.123.0\out\extension.js:2:842913)
+    at async c:\Users\coffeeofnosugar\.vscode\extensions\ms-vscode-remote.remote-ssh-0.123.0\out\extension.js:2:801927
+    at async t.withShowDetailsEvent (c:\Users\coffeeofnosugar\.vscode\extensions\ms-vscode-remote.remote-ssh-0.123.0\out\extension.js:2:805164)
+    at async A (c:\Users\coffeeofnosugar\.vscode\extensions\ms-vscode-remote.remote-ssh-0.123.0\out\extension.js:2:798392)
+    at async t.resolve (c:\Users\coffeeofnosugar\.vscode\extensions\ms-vscode-remote.remote-ssh-0.123.0\out\extension.js:2:802578)
+    at async c:\Users\coffeeofnosugar\.vscode\extensions\ms-vscode-remote.remote-ssh-0.123.0\out\extension.js:2:1095407
+[23:47:27.443] ------
+
+```
+
+
+
