@@ -6,6 +6,33 @@ tags:
  - Docker
 ---
 
+如果用户权限不足无法使用docker命令，需要先使用权限更高的用户将该用户分配到docker组中`sudo usermod -aG docker {usernam}`
+
+> 注意：
+>
+> 如果使用的是VSCode连接的服务器，可能会出现每次连接后该用户的分组（输入`Gropos`查看）不是最新的问题。
+>
+> 原因：
+>
+> VSCode Remote SSH 会:
+>
+> - 保持长连接
+>
+> - 复用 ssh control master
+>
+> - 后台常驻 vscode-server
+>
+> 你以为重新连接了，其实还是原来的ssh session
+>
+> 解决方法：
+>
+> 原因清楚之后，就很好解决了，只需要将VSCode Remote SSH完全断开就好了
+>
+> - 在VSCode中使用快捷键`Ctrl`+`Shift`+`p`
+> - 输入`Remote-SSH: Kill VS Code Server on Host`
+> - 选择你的服务器，并输入密码
+> - 重新启动VSCode
+
 ### 帮助命令
 
 [官方文档](https://docs.docker.com/engine/reference/run/)
@@ -92,3 +119,18 @@ tags:
 将容器里修改的内容保存下来并生成新的镜像，避免删除容器后，数据丢失，与git类似
 
 docker commit -a "提交作者" -m "提交的描述信息" <容器id> <新的镜像名>:[TAG]
+
+
+
+
+
+---
+
+## docker compose
+
+| docker compose up -d | 启动 |
+| -------------------- | ---- |
+|                      |      |
+|                      |      |
+|                      |      |
+

@@ -12,6 +12,14 @@ tags: Linux
 
 #### 切换用户
 
+完全模拟{username}登录，运行其个性化配置的程序
+
+```bash
+sudo -i -u {username}
+```
+
+临时使用以{username}身份，在当前目录执行一个命令，环境变量无所谓
+
 ```shell
 sudo -u {username} -s
 ```
@@ -53,6 +61,49 @@ sudo usermod -aG sudo {username}
 ```
 
 验证：执行`sudo ls /root`，需要输入用户密码确认权限
+
+> 注意：
+>
+> 如果使用的是VSCode连接的服务器，可能会出现每次连接后该用户的分组（输入`Gropos`查看）不是最新的问题。
+>
+> 原因：
+>
+> VSCode Remote SSH 会:
+>
+> - 保持长连接
+>
+> - 复用 ssh control master
+>
+> - 后台常驻 vscode-server
+>
+> 你以为重新连接了，其实还是原来的ssh session
+>
+> 解决方法：
+>
+> 原因清楚之后，就很好解决了，只需要将VSCode Remote SSH完全断开就好了
+>
+> - 在VSCode中使用快捷键`Ctrl`+`Shift`+`p`
+> - 输入`Remote-SSH: Kill VS Code Server on Host`
+> - 选择你的服务器，并输入密码
+> - 重新启动VSCode
+>
+> 另外，如果你使用VSCode，你可能会随时出现`__vsc_prompt_cmd_original: command not found`报错，所以在使用VSCode之前，建议将VSCode设置中的`terminal.integrated.shellIntegration.enabled`关闭。但是如果你此时已经使用VSCode登录过的话，那只能在.bashrc文件中添加`unset PROMPT_COMMAND`再使用`source ~/.bashrc`使应用更改
+
+> 即使给了sudo权限之后，该用户在第一次使用sudo的时候后需要输入密码，比较不方便，解决方法：
+>
+> - 使用`sudo visudo -f /etc/sudoers.d/wordswar`进入nano编辑器界面
+>   - visudo 是专门用来编写sudoers的，防止语法错误导致不能再使用sudo命令了
+> - 然后输入`{username} ALL=(ALL) NOPASSWD:ALL`
+>   - All任意主机
+>   - (ALL)以任意用户身份执行
+>   - NOPASSWD：不需要密码
+>   - ALL所有命令
+> - 按`Ctrl`+`O`，底部会出现`File Name to Write: /etc/sudoers.d/wordswar.tmp`
+> - 直接回车`Enter`即可保存
+> - 按`Ctrl`+`X`退出nano
+> - 如果没有问题会直接返回shell，如果有问题会提示syntax error
+>
+> 此时{username}就可以不用再输入密码直接使用sudo命令了
 
 #### 查看用户和组
 
@@ -118,15 +169,18 @@ sudo usermod -aG sudo {username}
 
 ### 文件操作
 
-| cat  <fileName>             | 查看文件                           |
-| --------------------------- | ---------------------------------- |
-| touch  <fileName>           | 创建文件                           |
-| mkdir -p  <dirName>         | 创建文件夹（-p 创建缺失的父目录）  |
-| cp  fileName <pah>          | 复制文件(后面的地址，不用加文件名) |
-| mv  <filename> <path>       | 移动文件                           |
-| mv  <fileName1> <fileName2> | 修改文件名称                       |
-| rm  <filename>              | 删除文件                           |
-| rm -r  <dirName>            | 删除空文件夹 -f 强制删除，不用确认 |
+| cat  <fileName>                                 | 查看文件                           |
+| ----------------------------------------------- | ---------------------------------- |
+| touch  <fileName>                               | 创建文件                           |
+| mkdir -p  <dirName>                             | 创建文件夹（-p 创建缺失的父目录）  |
+| cp  fileName <pah>                              | 复制文件(后面的地址，不用加文件名) |
+| mv  <filename> <path>                           | 移动文件                           |
+| mv  <fileName1> <fileName2>                     | 修改文件名称                       |
+| rm  <filename>                                  | 删除文件                           |
+| rm -r  <dirName>                                | 删除空文件夹 -f 强制删除，不用确认 |
+| find / -name "Log.Develop.20260514??.Debug.log" | 查找文件                           |
+
+
 
 | cd   |                    |
 | ---- | ------------------ |
