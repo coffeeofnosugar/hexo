@@ -134,3 +134,38 @@ docker commit -a "提交作者" -m "提交的描述信息" <容器id> <新的镜
 |                      |      |
 |                      |      |
 
+
+
+---
+
+## 设置镜像
+
+```bash
+sudo vim /etc/docker/daemon.json
+```
+
+填入
+
+```tex
+{
+  "registry-mirrors": [
+    "https://docker.1panel.live",
+    "https://dockerpull.com",
+    "https://hub.rat.dev"
+  ]
+}
+```
+
+保存后
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+查看是否生效
+
+```bash
+docker info
+```
+
