@@ -349,3 +349,49 @@ less +F /path/to/your/logfile.log
 
 
 
+---
+
+# swap
+
+## 什么是 swap
+
+当机器所需内存突然膨胀到超出最大内存，linux 会启动 Out Of Memort Killer 直接干掉一个服进程，服务器就会挂掉。如果有 swap， linux 就会把一些不常用的内存页写到磁盘，这样服务器就还能继续运行。但 swap 的速度可能会比内存的速度慢1000~10000倍。
+
+## 大小选择
+
+- 4G服务器 --> Swap 1~2GB
+- 8G服务器 --> Swap 2~4GB
+- 16G+服务器 --> Swap 2GB
+
+
+
+## 创建步骤
+
+```bash
+// 创建
+sudo fallocate -l 2G /swapfile
+// 设置权限
+sudo chmod 600 /swapfile
+// 格式化
+sudo mkswap /swapfile
+// 启用
+sudo swapon /swapfile
+// 查看
+free -h
+```
+
+
+
+### 开机自动挂载
+
+```bash
+sudo nano /etc/fstab
+```
+
+末尾加入
+
+```txt
+/swapfile none swap sw 0 0
+```
+
+保存即可
